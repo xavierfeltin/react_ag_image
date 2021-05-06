@@ -1,28 +1,39 @@
 import { useEffect, useRef } from 'react';
 import { Context } from 'vm';
 
-type MyCallbackType = (ctx: Context | null, x: number, y: number, width: number, height: number) => ImageData | null;
+export interface Rect {
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+}
+
 
 export interface RendererProps {
     name: string;  
     width: number;
     height: number;
-    drawingSteps: string[];
-    onImageLoaded: MyCallbackType;
+    drawingSteps: Rect[];
+    onImageDrawn: (img: ImageData) => void;
 };
 
-function draw(ctx: Context, width: number, height: number): void {
+function draw(ctx: Context, width: number, height: number, drawingSteps: Rect[] = []): void {
     ctx.fillStyle = "#FF0000";
     ctx.fillRect(0, 0, width, height);
 
     ctx.fillStyle = "#FFFFFF";
-    ctx.fillRect(0, 10, 40, 40);
+    drawingSteps.forEach(rect => {
+
+        ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+    })
+
 }
 
-function RendererFromDrawing({ name, width, height, drawingSteps, onImageLoaded }: RendererProps) {
+export function RendererFromDrawing({ name, width, height, drawingSteps, onImageDrawn }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
+        console.log("RendererFromDrawing#useEffect");
         const canvas = canvasRef.current as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');
                 
@@ -34,19 +45,18 @@ function RendererFromDrawing({ name, width, height, drawingSteps, onImageLoaded 
         canvas.height = height;
 
         if (ctx) {
-            draw(ctx, width, height);
-            onImageLoaded(ctx, 0, 0, width, height);
+            draw(ctx, width, height, drawingSteps);
+            const image = ctx.getImageData(0, 0, width, height);
+            onImageDrawn?.(image);
         }
         else {
             console.error("ctx is null the drawing can not be done");
         }       
-    });
+    }, [width, height, drawingSteps, onImageDrawn]);
 
     return (
         <div>
-          <canvas id={name} ref={canvasRef}></canvas>
+          <canvas id={name} ref={canvasRef} />
         </div>
     );    
 }
-
-export default RendererFromDrawing;
