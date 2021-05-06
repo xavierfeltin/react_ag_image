@@ -18,10 +18,11 @@ function getLimitDimensions(width: number, height: number, limit?: number): {wid
     return { width, height }
 }
 
-function RendererFromUrl({ name, url, limit }: RendererProps) {
+export function RendererFromUrl({ name, url, limit }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
+        console.log('RendererFromUrl#useEffet');
         const canvas = canvasRef.current as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');
         
@@ -45,13 +46,11 @@ function RendererFromUrl({ name, url, limit }: RendererProps) {
             }                        
         };
         img.src = url;
-    });
+    }, [url, limit]);
 
     return (
         <div>
-          <canvas id={name} ref={canvasRef}></canvas>
+          <canvas id={name} ref={canvasRef} />
         </div>
     );    
 }
-
-export default RendererFromUrl;

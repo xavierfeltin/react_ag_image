@@ -1,19 +1,7 @@
 import './App.css';
-import { useEffect } from 'react';
-import RendererFromUrl from './RendererFromUrl';
-import RendererFromDrawing from './RendererFromDrawing';
-import { Context } from 'vm';
-
-function handleImageLoaded(ctx: Context | null, x: number, y: number, width: number, height: number): ImageData | null {
-  if (ctx) {
-    const image = ctx.getImageData(x, y, width, height);
-    return image;      
-  }
-  else {
-    console.error("ctx is null the image can not be read");
-    return null;
-  }         
-}
+import { RendererFromUrl } from './RendererFromUrl';
+import {Rect, RendererFromDrawing} from './RendererFromDrawing';
+import {useState} from "react";
 
 function App() {
   /*
@@ -30,11 +18,31 @@ function App() {
       }                                
   });
   */
+  const width = 256;
+  const height = 256;
+  const [steps, setSteps] = useState<Rect[]>([]);
+
+  const handleImageDrawn = (img: ImageData) => {
+    console.log("Renderer drawn image", img);
+
+    const lastRect: Rect = steps.length > 0 ? steps[steps.length - 1] : {x: -20, y: 0, w: 10, h: 10};
+    const gotoNewLine = lastRect.x + 2*lastRect.w > (width - lastRect.w);
+    const newRect = {
+      ...lastRect,
+      x: gotoNewLine ? 0 : lastRect.x + 2*lastRect.w,
+      y: gotoNewLine ? lastRect.y + 2*lastRect.h : lastRect.y,
+    }
+
+    setTimeout(() => {
+      setSteps([...steps, newRect]);
+    }, 1000);
+  };
+
 
   return (
     <div>
       <RendererFromUrl name={"original-image"} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
-      <RendererFromDrawing onImageLoaded={handleImageLoaded} name={"generated-image"} width={256} height={256} drawingSteps={[]}/>
+      <RendererFromDrawing onImageDrawn={handleImageDrawn} name={"generated-image"} width={width} height={height} drawingSteps={steps}/>
     </div>    
   );
 }
