@@ -49,7 +49,7 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn }: RendererProp
             }                        
         };
         img.src = url;
-    }, [url, limit /*, onImageDrawn*/]);
+    }, [url, limit, onImageDrawn]);
 
     return (
         <div>

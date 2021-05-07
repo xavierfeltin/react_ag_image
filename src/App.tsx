@@ -1,7 +1,7 @@
 import './App.css';
 import { RendererFromUrl } from './RendererFromUrl';
 import {Rect, RendererFromDrawing} from './RendererFromDrawing';
-import {useState} from "react";
+import {useState, useCallback} from "react";
 
 //import MyWorker from './test.worker';
 
@@ -10,7 +10,7 @@ function App() {
   const width = 256;
   const height = 256;
   const [steps, setSteps] = useState<Rect[]>([]);
-  const [urlImage, setImage] = useState<ImageData|null>(null);
+  const [imageFromUrl, setImage] = useState<ImageData|null>(null);
 
   // const myWorkerInstance: Worker = new MyWorker();// useMemo(() => new MyWorker(), []);//
 
@@ -38,16 +38,16 @@ function App() {
     }, 1000);
   }
 
-  const handleUrlImageDrawn = (img: ImageData) => {
+  const handleUrlImageDrawn = useCallback((img: ImageData) => {
     console.log("handleUrlImageDrawn - Renderer drawn url image");
     setImage(img);
-  };
+  }, []);
 
   const handleGeneratedImageDrawn = (img: ImageData) => {
     console.log("handleGeneratedImageDrawn - Renderer drawn generated image");
     popRectangles();
 
-    if (urlImage)
+    if (imageFromUrl)
     {
       /*
       const message: AGworkerInData = {
