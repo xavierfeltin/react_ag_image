@@ -1,9 +1,9 @@
 import './App.css';
 import { RendererFromUrl } from './RendererFromUrl';
 import {Rect, RendererFromDrawing} from './RendererFromDrawing';
-import {useState, useCallback} from "react";
+import {useState, useCallback, useMemo, useEffect} from "react";
 
-//import MyWorker from './test.worker';
+import MyWorker from './test.worker';
 
 function App() {
 
@@ -12,17 +12,15 @@ function App() {
   const [steps, setSteps] = useState<Rect[]>([]);
   const [imageFromUrl, setImage] = useState<ImageData|null>(null);
 
-  // const myWorkerInstance: Worker = new MyWorker();// useMemo(() => new MyWorker(), []);//
+  const myWorkerInstance: Worker = useMemo(() => new MyWorker(), []); //new MyWorker();// ;//
 
   // console.log('[App] MyWorker instance:', myWorkerInstance);
   // myWorkerInstance.postMessage('This is a message from the main thread!');
   
-  /*
   interface AGworkerInData {
     image1: ImageData;
     image2: ImageData
   };
-  */
 
   const handleUrlImageDrawn = useCallback((img: ImageData) => {
     console.log("handleUrlImageDrawn - Renderer drawn url image");
@@ -46,27 +44,23 @@ function App() {
 
     if (imageFromUrl)
     {
-      /*
       const message: AGworkerInData = {
-        image1: urlImage,
+        image1: imageFromUrl,
         image2: img
       };
-      */
-      // myWorkerInstance.postMessage(message);
+      myWorkerInstance.postMessage(message);
     }
     
     // Generate new best candidate to display
     //agWorker.postMessage(["hello", "universe"]);
     // setSteps([newSteps]);    
-  }, [steps, imageFromUrl]);
+  }, [steps, imageFromUrl, myWorkerInstance]);
 
-  /*
   useEffect(() => {
     myWorkerInstance.addEventListener('message', function(e) {
       console.log('Message from Worker: ' + e.data);
     });
   }, [myWorkerInstance]);
-  */
 
   return (
     <div>
