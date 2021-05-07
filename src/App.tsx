@@ -17,9 +17,14 @@ function App() {
   // console.log('[App] MyWorker instance:', myWorkerInstance);
   // myWorkerInstance.postMessage('This is a message from the main thread!');
   
-  interface AGworkerInData {
+  interface AGworkerIn {
     image1: ImageData;
-    image2: ImageData
+    drawingSteps: Rect[];
+  };
+
+  interface AGworkerOut {
+    bestSsim: number;
+    bestDrawingSteps: Rect[];
   };
 
   const handleUrlImageDrawn = useCallback((img: ImageData) => {
@@ -39,33 +44,35 @@ function App() {
     }
 
     setTimeout(() => {
-      setSteps([...steps, newRect]);
+      if (imageFromUrl)
+      {
+        const message: AGworkerIn = {
+          image1: imageFromUrl, 
+          drawingSteps: [...steps, newRect]
+        };
+        myWorkerInstance.postMessage(message);
+      }
     }, 5000);
 
-    if (imageFromUrl)
-    {
-      const message: AGworkerInData = {
-        image1: imageFromUrl,
-        image2: img
-      };
-      myWorkerInstance.postMessage(message);
-    }
-    
     // Generate new best candidate to display
     //agWorker.postMessage(["hello", "universe"]);
     // setSteps([newSteps]);    
   }, [steps, imageFromUrl, myWorkerInstance]);
 
   useEffect(() => {
-    myWorkerInstance.addEventListener('message', function(e) {
-      console.log('Message from Worker: ' + e.data);
+    myWorkerInstance.addEventListener('message', function(e) {      
+      const newIterationResponse: AGworkerOut = e.data as AGworkerOut;
+      setSteps([...newIterationResponse.bestDrawingSteps]);
+      console.log('Message from Worker: ' + newIterationResponse.bestSsim);
     });
   }, [myWorkerInstance]);
 
   return (
     <div>
       <RendererFromUrl name={"original-image"} onImageDrawn={handleUrlImageDrawn} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
-      <RendererFromDrawing onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} drawingSteps={steps}/>
+      { imageFromUrl && 
+        <RendererFromDrawing onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} drawingSteps={steps}/>
+      }
     </div>    
   );
 }

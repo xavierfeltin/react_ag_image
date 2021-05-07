@@ -8,7 +8,6 @@ export interface Rect {
     h: number;
 }
 
-
 export interface RendererProps {
     name: string;  
     width: number;
