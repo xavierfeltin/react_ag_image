@@ -24,7 +24,14 @@ function App() {
   };
   */
 
-  function popRectangles() {
+  const handleUrlImageDrawn = useCallback((img: ImageData) => {
+    console.log("handleUrlImageDrawn - Renderer drawn url image");
+    setImage(img);
+  }, []);
+
+  const handleGeneratedImageDrawn = useCallback((img: ImageData) => {
+    console.log("handleGeneratedImageDrawn - Renderer drawn generated image");
+
     const lastRect: Rect = steps.length > 0 ? steps[steps.length - 1] : {x: -20, y: 0, w: 10, h: 10};
     const gotoNewLine = lastRect.x + 2*lastRect.w > (width - lastRect.w);
     const newRect = {
@@ -35,17 +42,7 @@ function App() {
 
     setTimeout(() => {
       setSteps([...steps, newRect]);
-    }, 1000);
-  }
-
-  const handleUrlImageDrawn = useCallback((img: ImageData) => {
-    console.log("handleUrlImageDrawn - Renderer drawn url image");
-    setImage(img);
-  }, []);
-
-  const handleGeneratedImageDrawn = (img: ImageData) => {
-    console.log("handleGeneratedImageDrawn - Renderer drawn generated image");
-    popRectangles();
+    }, 5000);
 
     if (imageFromUrl)
     {
@@ -61,7 +58,7 @@ function App() {
     // Generate new best candidate to display
     //agWorker.postMessage(["hello", "universe"]);
     // setSteps([newSteps]);    
-  };
+  }, [steps, imageFromUrl]);
 
   /*
   useEffect(() => {
