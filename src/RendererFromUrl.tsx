@@ -3,7 +3,8 @@ import { useEffect, useRef } from 'react';
 export interface RendererProps {
     name: string;  
     url: string;
-    limit?: number
+    limit?: number;
+    onImageDrawn: (img: ImageData) => void;
 };
 
 function getLimitDimensions(width: number, height: number, limit?: number): {width: number, height: number} {
@@ -18,7 +19,7 @@ function getLimitDimensions(width: number, height: number, limit?: number): {wid
     return { width, height }
 }
 
-export function RendererFromUrl({ name, url, limit }: RendererProps) {
+export function RendererFromUrl({ name, url, limit, onImageDrawn }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -40,13 +41,15 @@ export function RendererFromUrl({ name, url, limit }: RendererProps) {
 
             if (ctx) {
                 ctx.drawImage(img, 0, 0, width, height);
+                const image = ctx.getImageData(0, 0, width, height);
+                onImageDrawn?.(image);
             }
             else {
                 console.error("ctx is null the image can not be loaded");
             }                        
         };
         img.src = url;
-    }, [url, limit]);
+    }, [url, limit /*, onImageDrawn*/]);
 
     return (
         <div>

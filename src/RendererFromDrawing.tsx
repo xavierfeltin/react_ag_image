@@ -26,7 +26,6 @@ function draw(ctx: Context, width: number, height: number, drawingSteps: Rect[] 
 
         ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
     })
-
 }
 
 export function RendererFromDrawing({ name, width, height, drawingSteps, onImageDrawn }: RendererProps) {

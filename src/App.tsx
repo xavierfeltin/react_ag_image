@@ -3,28 +3,28 @@ import { RendererFromUrl } from './RendererFromUrl';
 import {Rect, RendererFromDrawing} from './RendererFromDrawing';
 import {useState} from "react";
 
+//import MyWorker from './test.worker';
+
 function App() {
-  /*
-  useEffect(() => {
-      let canvas = canvasOriginal.current as HTMLCanvasElement;
-      let originalImage = getImageData(canvas, 0, 0, 256, 256);
 
-      canvas = canvasGenerated.current as HTMLCanvasElement;
-      let generatedImage = getImageData(canvas, 0, 0, 256, 256);
-
-      if (originalImage && generatedImage) {
-        const { mssim, performance } = ssim(originalImage, generatedImage);
-        console.log(`SSIM: ${mssim} (${performance}ms)`);
-      }                                
-  });
-  */
   const width = 256;
   const height = 256;
   const [steps, setSteps] = useState<Rect[]>([]);
+  const [urlImage, setImage] = useState<ImageData|null>(null);
 
-  const handleImageDrawn = (img: ImageData) => {
-    console.log("Renderer drawn image", img);
+  // const myWorkerInstance: Worker = new MyWorker();// useMemo(() => new MyWorker(), []);//
 
+  // console.log('[App] MyWorker instance:', myWorkerInstance);
+  // myWorkerInstance.postMessage('This is a message from the main thread!');
+  
+  /*
+  interface AGworkerInData {
+    image1: ImageData;
+    image2: ImageData
+  };
+  */
+
+  function popRectangles() {
     const lastRect: Rect = steps.length > 0 ? steps[steps.length - 1] : {x: -20, y: 0, w: 10, h: 10};
     const gotoNewLine = lastRect.x + 2*lastRect.w > (width - lastRect.w);
     const newRect = {
@@ -36,13 +36,45 @@ function App() {
     setTimeout(() => {
       setSteps([...steps, newRect]);
     }, 1000);
+  }
+
+  const handleUrlImageDrawn = (img: ImageData) => {
+    console.log("handleUrlImageDrawn - Renderer drawn url image");
+    setImage(img);
   };
 
+  const handleGeneratedImageDrawn = (img: ImageData) => {
+    console.log("handleGeneratedImageDrawn - Renderer drawn generated image");
+    popRectangles();
+
+    if (urlImage)
+    {
+      /*
+      const message: AGworkerInData = {
+        image1: urlImage,
+        image2: img
+      };
+      */
+      // myWorkerInstance.postMessage(message);
+    }
+    
+    // Generate new best candidate to display
+    //agWorker.postMessage(["hello", "universe"]);
+    // setSteps([newSteps]);    
+  };
+
+  /*
+  useEffect(() => {
+    myWorkerInstance.addEventListener('message', function(e) {
+      console.log('Message from Worker: ' + e.data);
+    });
+  }, [myWorkerInstance]);
+  */
 
   return (
     <div>
-      <RendererFromUrl name={"original-image"} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
-      <RendererFromDrawing onImageDrawn={handleImageDrawn} name={"generated-image"} width={width} height={height} drawingSteps={steps}/>
+      <RendererFromUrl name={"original-image"} onImageDrawn={handleUrlImageDrawn} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
+      <RendererFromDrawing onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} drawingSteps={steps}/>
     </div>    
   );
 }
