@@ -1,12 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Context } from 'vm';
-
-export interface Rect {
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-}
+import {Rect} from "./common/geometry";
 
 export interface RendererProps {
     name: string;  
@@ -17,13 +11,13 @@ export interface RendererProps {
 };
 
 function draw(ctx: Context, width: number, height: number, drawingSteps: Rect[] = []): void {
-    ctx.fillStyle = "#FF0000";
-    ctx.fillRect(0, 0, width, height);
+    ctx.clearRect(0, 0, width, height);
 
-    ctx.fillStyle = "#FFFFFF";
-    drawingSteps.forEach(rect => {
+    //console.log("[Renderer] " + JSON.stringify(drawingSteps));
 
-        ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+    drawingSteps.forEach(shape => {
+        ctx.fillStyle = `rgba(${shape.color.r},${shape.color.g},${shape.color.b},${shape.color.a})`;
+        ctx.fillRect(shape.x, shape.y, shape.w, shape.h);        
     })
 }
 
