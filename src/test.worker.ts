@@ -157,18 +157,18 @@ function mutate(ind: Individual, width: number, height: number, force: boolean):
         id: Date.now()
     };
     
-    const probaToMutate = force ? 1.0 : 0.2;
+    const probaToMutate = force ? 1.0 : 0.1;
     ind.genes.forEach((gene: Polygon) => {
         const mutatedGene: Polygon = copyPolygon(gene);
         if (Math.random() < probaToMutate) {            
             const vertexIndex = randomNumberInRange(0, mutatedGene.vertices.length, true);
 
-            const range = randomNumberInRange(-0.1, 0.1, false);
+            const range = randomNumberInRange(-0.3, 0.3, false);
             mutatedGene.vertices[vertexIndex] = moveVertex(mutatedGene.vertices[vertexIndex], range, width, height);
 
             if (Math.random() < probaToMutate) {
                 const colorIndex = randomNumberInRange(0, mutatedGene.color.length, true);
-                const range = randomNumberInRange(-0.1, 0.1, false);
+                const range = randomNumberInRange(-0.05, 0.05, false);
                 mutatedGene.color[colorIndex] = Math.round(mutatedGene.color[colorIndex] + mutatedGene.color[colorIndex] * range);
                 if (colorIndex === 3) {
                     mutatedGene.color[colorIndex] = Math.max(0, Math.min(mutatedGene.color[colorIndex], 1));
@@ -203,7 +203,7 @@ self.addEventListener("message", e => {
     // Create ressources to draw the generated images
     const canvas = new OffscreenCanvas(originalImage.width, originalImage.height);
     const ctx = canvas.getContext('2d');
-
+    
     if(!ctx) {
         console.error("no ctx to draw the image");
 
@@ -218,6 +218,8 @@ self.addEventListener("message", e => {
     }
     else {
         let nextPop: Individual[] = [];
+        let previousBest: Individual | null = null;
+
         if (previousPop.length === 0) {
             let start = (new Date()).getTime();
             console.log("[MyWorker] Generate first population");
@@ -233,10 +235,10 @@ self.addEventListener("message", e => {
             console.log("[MyWorker] Generate next generation population");
             previousPop = convertFitnessIntoProbabilities(previousPop);
             
-            const previousBest: Individual = {...previousPop[0]};
-            nextPop.push(previousBest);
+            previousBest = previousPop[0];
+            //nextPop.push(previousBest);
 
-            for (let i = 0; i < (msg.populationSize - 1); i++) {
+            for (let i = 0; i < msg.populationSize; i++) {
                 const rand = Math.random();
                 if (rand < 0.1) {
                     // Add an previous individual that may be mutated
@@ -269,11 +271,16 @@ self.addEventListener("message", e => {
     
         nextPop = sortDescByFitness(nextPop);
         
-        console.log("[MyWorker] Send response - best (" + nextPop[0].id + "): " + nextPop[0].fitness);
+        let best: Individual = nextPop[0];
+        if (previousBest && previousBest.fitness > nextPop[0].fitness) {
+            best = previousBest;
+        }
 
+        console.log("[MyWorker] Send response - best (" + best.id + "): " + best.fitness);
+        
         const response: AGworkerOut = {
-            bestSsim: nextPop[0].fitness,
-            bestDrawingSteps: nextPop[0].genes,
+            bestSsim: best.fitness,
+            bestDrawingSteps: best.genes,
             population: nextPop,
             generation: msg.generation + 1
         };
