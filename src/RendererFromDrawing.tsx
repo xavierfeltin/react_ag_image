@@ -1,23 +1,22 @@
 import { useEffect, useRef } from 'react';
 import { Context } from 'vm';
-import {Rect} from "./common/geometry";
+import {drawPolygon, Polygon} from "./common/geometry";
 
 export interface RendererProps {
     name: string;  
     width: number;
     height: number;
-    drawingSteps: Rect[];
+    drawingSteps: Polygon[];
     onImageDrawn: (img: ImageData) => void;
 };
 
-function draw(ctx: Context, width: number, height: number, drawingSteps: Rect[] = []): void {
+function draw(ctx: Context, width: number, height: number, drawingSteps: Polygon[] = []): void {
     ctx.clearRect(0, 0, width, height);
-
-    //console.log("[Renderer] " + JSON.stringify(drawingSteps));
+    ctx.fillStyle = "#000000";
+    ctx.fillRect(0, 0, width, height);
 
     drawingSteps.forEach(shape => {
-        ctx.fillStyle = `rgba(${shape.color.r},${shape.color.g},${shape.color.b},${shape.color.a})`;
-        ctx.fillRect(shape.x, shape.y, shape.w, shape.h);        
+        drawPolygon(ctx, shape);
     })
 }
 

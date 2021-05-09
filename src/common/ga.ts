@@ -1,7 +1,7 @@
-import { Rect } from "./geometry";
+import { Polygon } from "./geometry";
 
 export interface Individual {
-    genes: Rect[];
+    genes: Polygon[];
     fitness: number;
     probability: number;
     id: number

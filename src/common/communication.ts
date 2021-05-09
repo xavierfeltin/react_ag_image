@@ -1,17 +1,18 @@
 import { Individual } from "./ga";
-import {Rect} from "./geometry";
+import {Polygon} from "./geometry";
 
 export interface AGworkerIn {
     image: ImageData;
     populationSize: number;
     genesSize: number;
+    nbVertices: number;
     population: Individual[];
     generation: number;
 };
 
 export interface AGworkerOut {
     bestSsim: number;
-    bestDrawingSteps: Rect[];
+    bestDrawingSteps: Polygon[];
     population: Individual[];
     generation: number;
 };

@@ -32,8 +32,9 @@ function App() {
       {
         const message: AGworkerIn = {
           image: imageFromUrl, 
-          populationSize: 500,
-          genesSize: 100, 
+          populationSize: 50,
+          genesSize: 125, 
+          nbVertices: 3,
           population: simulation.population,
           generation: simulation.generation
         };
