@@ -1,7 +1,7 @@
 import ssim from "ssim.js";
 import {copyPolygon, drawPolygon, moveVertex, Polygon, Vertex} from "./common/geometry";
 import {AGworkerIn, AGworkerOut} from "./common/communication";
-import {Individual} from "./common/ga";
+import {Individual, randomNumberInRange} from "./common/ga";
 import { Context } from "vm";
 
 declare const self: Worker;
@@ -14,8 +14,8 @@ function createIndividual(genesSize: number, nbVertices: number, width: number, 
 
         const vertices: Vertex[] = [];
         for (let j = 0; j < nbVertices; j++) {
-            const x = Math.round(Math.random() * (width - 1));
-            const y = Math.round(Math.random() * (height - 1));
+            const x = randomNumberInRange(0, width, true);
+            const y = randomNumberInRange(0, height, true);
             const vertex: Vertex = {
                 x: x,
                 y: y
@@ -23,10 +23,10 @@ function createIndividual(genesSize: number, nbVertices: number, width: number, 
             vertices.push(vertex);            
         }
         
-        const r = Math.round(Math.random() * 255);
-        const g = Math.round(Math.random() * 255);
-        const b = Math.round(Math.random() * 255);
-        const a = Math.random();
+        const r = randomNumberInRange(0, 256, true);
+        const g = randomNumberInRange(0, 256, true);
+        const b = randomNumberInRange(0, 256, true);
+        const a = randomNumberInRange(0, 1, false);
 
         const shape: Polygon = {
             vertices: vertices,
@@ -141,12 +141,11 @@ function crossOver(a: Individual, b: Individual): Individual {
         id: Date.now()
     };
 
-    let probaToPickFromA = (a.fitness > b.fitness) ? 0.7 : ((a.fitness === b.fitness)  ? 0.5 : 0.3);
+    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
     for (let i = 0; i < a.genes.length; i++) {
         const gene = (Math.random() < probaToPickFromA) ? copyPolygon(a.genes[i]) : copyPolygon(b.genes[i]);
         child.genes.push(gene);
     }
-
     return child;
 }
 
@@ -162,15 +161,21 @@ function mutate(ind: Individual, width: number, height: number, force: boolean):
     ind.genes.forEach((gene: Polygon) => {
         const mutatedGene: Polygon = copyPolygon(gene);
         if (Math.random() < probaToMutate) {            
-            const vertexIndex = Math.round(Math.random() * (mutatedGene.vertices.length - 1));
+            const vertexIndex = randomNumberInRange(0, mutatedGene.vertices.length, true);
 
-            const range = Math.random() * width * 0.05;
+            const range = randomNumberInRange(-0.1, 0.1, false);
             mutatedGene.vertices[vertexIndex] = moveVertex(mutatedGene.vertices[vertexIndex], range, width, height);
 
             if (Math.random() < probaToMutate) {
-                const colorIndex = Math.round(Math.random() * (mutatedGene.color.length - 1));
-                const range = Math.random() * 0.1;
+                const colorIndex = randomNumberInRange(0, mutatedGene.color.length, true);
+                const range = randomNumberInRange(-0.1, 0.1, false);
                 mutatedGene.color[colorIndex] = Math.round(mutatedGene.color[colorIndex] + mutatedGene.color[colorIndex] * range);
+                if (colorIndex === 3) {
+                    mutatedGene.color[colorIndex] = Math.max(0, Math.min(mutatedGene.color[colorIndex], 1));
+                }
+                else {
+                    mutatedGene.color[colorIndex] = Math.max(0, Math.min(mutatedGene.color[colorIndex], 255));
+                }                
             }            
         }
         mutant.genes.push(mutatedGene);
@@ -235,8 +240,8 @@ self.addEventListener("message", e => {
                 const rand = Math.random();
                 if (rand < 0.1) {
                     // Add an previous individual that may be mutated
-                    let index = Math.round(Math.random() * (msg.populationSize - 1));
-                    const mutant: Individual = mutate(previousPop[index], originalImage.width, originalImage.height, false);
+                    const happySelectInd = pickParent(previousPop);
+                    const mutant: Individual = mutate(happySelectInd, originalImage.width, originalImage.height, false);
                     mutant.fitness = evaluate(mutant, originalImage, ctx);
                     nextPop.push(mutant);
                 }
