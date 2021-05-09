@@ -24,7 +24,6 @@ export function RendererFromDrawing({ name, width, height, drawingSteps, onImage
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        console.log("RendererFromDrawing#useEffect");
         const canvas = canvasRef.current as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');
                 

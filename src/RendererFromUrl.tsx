@@ -23,7 +23,6 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn }: RendererProp
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
-        console.log('RendererFromUrl#useEffet');
         const canvas = canvasRef.current as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');
         

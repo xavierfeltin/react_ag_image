@@ -1,5 +1,4 @@
 import { Individual } from "./ga";
-import {Polygon} from "./geometry";
 
 export interface AGworkerIn {
     image: ImageData;
@@ -8,11 +7,11 @@ export interface AGworkerIn {
     nbVertices: number;
     population: Individual[];
     generation: number;
+    best: Individual;
 };
 
 export interface AGworkerOut {
-    bestSsim: number;
-    bestDrawingSteps: Polygon[];
+    best: Individual;
     population: Individual[];
     generation: number;
 };

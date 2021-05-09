@@ -11,8 +11,12 @@ function App() {
   const width = 256;
   const height = 256;
   const [simulation, setSimulation] = useState<AGworkerOut>({
-    bestSsim: 0,
-    bestDrawingSteps: [],
+    best: {
+      genes: [],
+      fitness: NaN,
+      id: NaN,
+      probability: NaN
+    },
     population: [],
     generation: 0
   });
@@ -20,13 +24,10 @@ function App() {
   const myWorkerInstance: Worker = useMemo(() => new MyWorker(), []); //new MyWorker();// ;//
 
   const handleUrlImageDrawn = useCallback((img: ImageData) => {
-    console.log("handleUrlImageDrawn - Renderer drawn url image");
     setImage(img);
   }, []);
 
   const handleGeneratedImageDrawn = useCallback((img: ImageData) => {
-    console.log("handleGeneratedImageDrawn - Renderer drawn generated image");
-
     setTimeout(() => {
       if (imageFromUrl)
       {
@@ -35,6 +36,7 @@ function App() {
           populationSize: 50,
           genesSize: 125, 
           nbVertices: 3,
+          best: simulation.best,
           population: simulation.population,
           generation: simulation.generation
         };
@@ -47,10 +49,6 @@ function App() {
   useEffect(() => {
     myWorkerInstance.addEventListener('message', function(e) {      
       const response: AGworkerOut = e.data as AGworkerOut;
-      console.log('Response - Generation ' + response.generation + ': ' + response.bestSsim);
-      console.log('Response - First ' + response.population[0].fitness + '- Last ' + response.population[response.population.length - 1].fitness);
-      //console.log("[App] " + JSON.stringify(response.bestDrawingSteps));
-
       setSimulation(response);      
     });
   }, [myWorkerInstance]);
@@ -59,7 +57,7 @@ function App() {
     <div>
       <RendererFromUrl name={"original-image"} onImageDrawn={handleUrlImageDrawn} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
       { imageFromUrl && 
-        <RendererFromDrawing onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} drawingSteps={simulation.bestDrawingSteps}/>
+        <RendererFromDrawing onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} drawingSteps={simulation.best.genes}/>
       }
     </div>    
   );
