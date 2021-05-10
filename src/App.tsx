@@ -10,6 +10,13 @@ function App() {
 
   const width = 256;
   const height = 256;
+
+  const simWidth = 64;
+  const simHeight = 64;
+
+  const ratioW = 256 / simWidth;
+  const ratioH = 256 / simHeight;
+
   const [simulation, setSimulation] = useState<AGworkerOut>({
     best: {
       genes: [],
@@ -38,7 +45,9 @@ function App() {
           nbVertices: 3,
           best: simulation.best,
           population: simulation.population,
-          generation: simulation.generation
+          generation: simulation.generation,
+          renderingHeight: simHeight,
+          renderingWidth: simWidth
         };
         myWorkerInstance.postMessage(message);
       }
@@ -57,7 +66,7 @@ function App() {
     <div>
       <RendererFromUrl name={"original-image"} onImageDrawn={handleUrlImageDrawn} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
       { imageFromUrl && 
-        <RendererFromDrawing onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} drawingSteps={simulation.best.genes}/>
+        <RendererFromDrawing onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} ratioW={ratioW} ratioH={ratioH} drawingSteps={simulation.best.genes}/>
       }
     </div>    
   );

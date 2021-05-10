@@ -141,7 +141,8 @@ function crossOver(a: Individual, b: Individual): Individual {
         id: Date.now()
     };
 
-    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
+    //let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
+    let probaToPickFromA = 0.5;
     for (let i = 0; i < a.genes.length; i++) {
         const gene = (Math.random() < probaToPickFromA) ? copyPolygon(a.genes[i]) : copyPolygon(b.genes[i]);
         child.genes.push(gene);
@@ -161,10 +162,12 @@ function mutate(ind: Individual, width: number, height: number, force: boolean):
     ind.genes.forEach((gene: Polygon) => {
         const mutatedGene: Polygon = copyPolygon(gene);
         if (Math.random() < probaToMutate) {            
-            const vertexIndex = randomNumberInRange(0, mutatedGene.vertices.length, true);            
+            // const vertexIndex = randomNumberInRange(0, mutatedGene.vertices.length, true);            
             mutatedGene.vertices.forEach((v: Vertex) => {
-                const range = randomNumberInRange(-0.3, 0.3, false);
-                v = moveVertex(mutatedGene.vertices[vertexIndex], range, width, height);     
+                let range = randomNumberInRange(-10, 10, false);
+                if (range > -1 && range <= 0) { range = -1}
+                if (range < 1 && range >= 0) { range = 1}
+                v = moveVertex(v, range, width, height);     
             })
 
             if (Math.random() < probaToMutate) {
@@ -178,7 +181,7 @@ function mutate(ind: Individual, width: number, height: number, force: boolean):
                         c = Math.max(0, Math.min(c, 255));
                     }
                 });                              
-            }            
+            }       
         }
         mutant.genes.push(mutatedGene);
     });
@@ -211,10 +214,13 @@ self.addEventListener("message", e => {
     const originalImage = msg.image;
 
     // Create ressources to draw the generated images
-    const canvas = new OffscreenCanvas(originalImage.width, originalImage.height);
+    const canvas = new OffscreenCanvas(msg.renderingWidth, msg.renderingHeight);
     const ctx = canvas.getContext('2d');
     
-    if(!ctx) {
+    const canvasOriginal = new OffscreenCanvas(msg.renderingWidth, msg.renderingHeight);
+    const ctxOriginal = canvasOriginal.getContext('2d');  
+
+    if(!ctx || !ctxOriginal) {
         console.error("no ctx to draw the image");
 
         const response: AGworkerOut = {
@@ -226,11 +232,18 @@ self.addEventListener("message", e => {
         postMessage(response);
     }
     else {
+        const ratioW = msg.renderingWidth / originalImage.width;
+        const ratioH = msg.renderingHeight / originalImage.height;
+        ctxOriginal.scale(ratioW, ratioH);
+        ctxOriginal.putImageData(originalImage, 0, 0);        
+        const scaledOriginalImage = ctxOriginal.getImageData(0, 0, msg.renderingWidth, msg.renderingHeight);
+
         let nextPop: Individual[] = [];
+        
         if (previousPop.length === 0) {
             let start = (new Date()).getTime();
-            nextPop = generatePopulation(msg.populationSize, msg.genesSize, msg.nbVertices, msg.image.width, msg.image.height);
-            nextPop = evaluatePopulation(nextPop, originalImage, ctx);        
+            nextPop = generatePopulation(msg.populationSize, msg.genesSize, msg.nbVertices, msg.renderingWidth, msg.renderingHeight); //, msg.image.width, msg.image.height);
+            nextPop = evaluatePopulation(nextPop, scaledOriginalImage, ctx);        
             let end = (new Date()).getTime();
             let elapsedTime = end - start;
             console.log("[MyWorker] Elapsed time: " + (elapsedTime / 1000) + "s");
@@ -243,26 +256,26 @@ self.addEventListener("message", e => {
 
             for (let i = 0; i < msg.populationSize; i++) {
                 const rand = Math.random();
-                if (rand < 0.1) {
+                if (rand < 0.2) {
                     // Add an previous individual that may be mutated
                     const happySelectInd = pickParent(previousPop);
-                    const mutant: Individual = mutate(happySelectInd, originalImage.width, originalImage.height, false);
-                    mutant.fitness = evaluate(mutant, originalImage, ctx);
+                    const mutant: Individual = mutate(happySelectInd, msg.renderingWidth, msg.renderingHeight, false);
+                    mutant.fitness = evaluate(mutant, scaledOriginalImage, ctx);
                     nextPop.push(mutant);
                 }
-                else if (rand < 0.2) {
+                else if (rand < 0.3) {
                     // Create a new individual
-                    const ind = createIndividual(msg.genesSize, msg.nbVertices, originalImage.width, originalImage.height);
-                    ind.fitness = evaluate(ind, originalImage, ctx);
+                    const ind = createIndividual(msg.genesSize, msg.nbVertices, msg.renderingWidth, msg.renderingHeight);
+                    ind.fitness = evaluate(ind, scaledOriginalImage, ctx);
                     nextPop.push(ind);
                 }
                 else {
                     // Create a child
                     const parentA = pickParent(previousPop);
-                    const parentB = pickParent(previousPop);
+                    const parentB = pickParent(previousPop);                    
                     let child = crossOver(parentA, parentB);
-                    child = mutate(child, originalImage.width, originalImage.height, false);
-                    child.fitness = evaluate(child, originalImage, ctx);
+                    child = mutate(child, msg.renderingWidth, msg.renderingHeight, false);
+                    child.fitness = evaluate(child, scaledOriginalImage, ctx);
                     nextPop.push(child);
                 }
             }
@@ -282,7 +295,7 @@ self.addEventListener("message", e => {
             best = nextPop[0];
         }
 
-        console.log(`[MyWorker] New best ${best.id} (${best.fitness}) - Previous best ${previousBest?.id} ${previousBest?.fitness}`);
+        console.log(`[MyWorker] Generation ${msg.generation + 1} - fitness gain : ${best.fitness - previousBest?.fitness} - new : ${best.fitness}`);
         
         const response: AGworkerOut = {
             best: best,

@@ -8,6 +8,8 @@ export interface AGworkerIn {
     population: Individual[];
     generation: number;
     best: Individual;
+    renderingWidth: number;
+    renderingHeight: number;
 };
 
 export interface AGworkerOut {
