@@ -10,19 +10,21 @@ export interface RendererProps {
     ratioH: number;
     drawingSteps: Polygon[];
     onImageDrawn: (img: ImageData) => void;
+    className: string;
 };
 
-function draw(ctx: Context, width: number, height: number, drawingSteps: Polygon[] = []): void {
+function draw(ctx: Context, width: number, height: number, ratioW: number, ratioH: number, drawingSteps: Polygon[] = []): void {    
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = "#000000";
     ctx.fillRect(0, 0, width, height);
 
+    ctx.scale(ratioW, ratioH);
     drawingSteps.forEach(shape => {
         drawPolygon(ctx, shape);
     })
 }
 
-export function RendererFromDrawing({ name, width, height, ratioW, ratioH, drawingSteps, onImageDrawn }: RendererProps) {
+export function RendererFromDrawing({ name, width, height, ratioW, ratioH, drawingSteps, onImageDrawn, className }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -36,10 +38,8 @@ export function RendererFromDrawing({ name, width, height, ratioW, ratioH, drawi
         canvas.width = width;
         canvas.height = height;
 
-        if (ctx) {
-            ctx.scale(ratioW, ratioH);
-            draw(ctx, width, height, drawingSteps);
-            
+        if (ctx) {            
+            draw(ctx, width, height, ratioW, ratioH, drawingSteps);            
             const image = ctx.getImageData(0, 0, width, height);
             onImageDrawn?.(image);
         }
@@ -50,7 +50,7 @@ export function RendererFromDrawing({ name, width, height, ratioW, ratioH, drawi
 
     return (
         <div>
-          <canvas id={name} ref={canvasRef} />
+          <canvas className={className} id={name} ref={canvasRef} />
         </div>
     );    
 }

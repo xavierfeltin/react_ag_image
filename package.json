@@ -11,6 +11,7 @@
     "@types/node": "^12.20.12",
     "@types/react": "^17.0.5",
     "@types/react-dom": "^17.0.3",
+    "pixelmatch": "^5.2.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-scripts": "4.0.3",
@@ -43,6 +44,7 @@
     ]
   },
   "devDependencies": {
+    "@types/pixelmatch": "^5.2.3",
     "react-app-rewired": "^2.1.8",
     "worker-loader": "^3.0.8"
   }

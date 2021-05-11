@@ -5,6 +5,7 @@ export interface RendererProps {
     url: string;
     limit?: number;
     onImageDrawn: (img: ImageData) => void;
+    className: string;
 };
 
 function getLimitDimensions(width: number, height: number, limit?: number): {width: number, height: number} {
@@ -19,7 +20,7 @@ function getLimitDimensions(width: number, height: number, limit?: number): {wid
     return { width, height }
 }
 
-export function RendererFromUrl({ name, url, limit, onImageDrawn }: RendererProps) {
+export function RendererFromUrl({ name, url, limit, onImageDrawn, className }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -51,7 +52,7 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn }: RendererProp
     }, [url, limit, onImageDrawn]);
 
     return (
-        <div>
+        <div className={className}>
           <canvas id={name} ref={canvasRef} />
         </div>
     );    

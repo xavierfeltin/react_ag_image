@@ -19,14 +19,14 @@ export interface Polygon {
 }
 
 export function getRGBAFromColor(c: number[]): string {
-    switch (c.length) {
-        case 3:
-            return `rgb(${c[0]},${c[1]},${c[2]}})`;
-        case 4:        
-            return `rgba(${c[0]},${c[1]},${c[2]},${c[3]})`
-        default:
-            return "rgb(0, 0, 0)";
+    let color = "rgb(0, 0, 0";
+    if (c.length === 3) {
+        color = `rgb(${c[0]},${c[1]},${c[2]})`;
     }
+    else {
+        color = `rgba(${c[0]},${c[1]},${c[2]},${c[3]})`
+    }
+    return color;
 }
 
 export function drawRectangle(ctx: Context, rect: Rect) {

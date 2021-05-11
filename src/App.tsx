@@ -1,6 +1,7 @@
 import './App.css';
 import { RendererFromUrl } from './RendererFromUrl';
 import {RendererFromDrawing} from './RendererFromDrawing';
+import {GAInformation} from './GAInformation';
 import {useState, useCallback, useMemo, useEffect} from "react";
 
 import MyWorker from './test.worker';
@@ -20,12 +21,15 @@ function App() {
   const [simulation, setSimulation] = useState<AGworkerOut>({
     best: {
       genes: [],
-      fitness: NaN,
-      id: NaN,
-      probability: NaN
+      fitness: 0,
+      id: 0,
+      probability: 0,
+      phenotype: []
     },
     population: [],
-    generation: 0
+    generation: 0,
+    elapsedTime: 0,
+    notImprovingSince: 0
   });
   const [imageFromUrl, setImage] = useState<ImageData|null>(null);
   const myWorkerInstance: Worker = useMemo(() => new MyWorker(), []); //new MyWorker();// ;//
@@ -35,24 +39,23 @@ function App() {
   }, []);
 
   const handleGeneratedImageDrawn = useCallback((img: ImageData) => {
-    setTimeout(() => {
-      if (imageFromUrl)
-      {
-        const message: AGworkerIn = {
-          image: imageFromUrl, 
-          populationSize: 50,
-          genesSize: 125, 
-          nbVertices: 3,
-          best: simulation.best,
-          population: simulation.population,
-          generation: simulation.generation,
-          renderingHeight: simHeight,
-          renderingWidth: simWidth
-        };
-        myWorkerInstance.postMessage(message);
-      }
-    }, 200);
- 
+   if (imageFromUrl)
+    {
+      const message: AGworkerIn = {
+        image: imageFromUrl, 
+        populationSize: 50,
+        genesSize: 125,
+        nbVertices: 3,
+        notImprovingSince: simulation.notImprovingSince,
+        nbColor: 4,
+        best: simulation.best,
+        population: simulation.population,
+        generation: simulation.generation,
+        renderingHeight: simHeight,
+        renderingWidth: simWidth
+      };
+      myWorkerInstance.postMessage(message);
+    }
   }, [simulation, imageFromUrl, myWorkerInstance]);
 
   useEffect(() => {
@@ -63,12 +66,18 @@ function App() {
   }, [myWorkerInstance]);
 
   return (
-    <div>
-      <RendererFromUrl name={"original-image"} onImageDrawn={handleUrlImageDrawn} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
-      { imageFromUrl && 
-        <RendererFromDrawing onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} ratioW={ratioW} ratioH={ratioH} drawingSteps={simulation.best.genes}/>
-      }
-    </div>    
+    <div className="wrapper">
+        <RendererFromUrl className="one" name={"original-image"} onImageDrawn={handleUrlImageDrawn} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
+        { imageFromUrl && 
+          <RendererFromDrawing className="two" onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} ratioW={ratioW} ratioH={ratioH} drawingSteps={simulation.best.phenotype}/>        
+        }              
+      <GAInformation className="three" 
+        generation={simulation.generation} 
+        fitness={simulation.best.fitness} 
+        idBest={simulation.best.id} 
+        elapsedTimeForGeneration={simulation.elapsedTime}
+        notImprovingSince={simulation.notImprovingSince}/>
+    </div>        
   );
 }
 

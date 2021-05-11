@@ -1,10 +1,11 @@
-import { Polygon } from "./geometry";
+import { Polygon, Vertex } from "./geometry";
 
 export interface Individual {
-    genes: Polygon[];
+    genes: number[];
     fitness: number;
     probability: number;
     id: number
+    phenotype: Polygon[]
 }
 
 export function randomNumberInRange(min: number, max: number, isInteger: boolean): number {
@@ -18,4 +19,31 @@ export function randomNumberInRange(min: number, max: number, isInteger: boolean
     }
 
     return value;
+}
+
+export function buildPhenotypeFromGenes(genes: number[], nbVertices: number, nbColor: number):  Polygon[] {
+    const phenotype: Polygon[] = [];
+
+    const polygonSize = nbVertices * 2 + nbColor;
+    for (let i = 0; i < genes.length; i = i+polygonSize) {
+        const p: Polygon = {
+            vertices: [],
+            color: []
+        };
+
+        const nbCoordinates = nbVertices * 2;
+        for (let j = 0; j < nbCoordinates; j = j+2) {
+            const v: Vertex = {
+                x: genes[i + j],
+                y: genes[i + j + 1]
+            };
+            p.vertices.push(v);    
+        }
+
+        for (let k = 0; k < nbColor; k++) {
+            p.color.push(genes[i + nbCoordinates + k]);    
+        }
+        phenotype.push(p);
+    }
+    return phenotype;
 }
