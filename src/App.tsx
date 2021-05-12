@@ -1,6 +1,7 @@
 import './App.css';
 import { RendererFromUrl } from './RendererFromUrl';
 import {RendererFromDrawing} from './RendererFromDrawing';
+import {RendererFromData} from './RendererFromData';
 import {GAInformation} from './GAInformation';
 import {useState, useCallback, useMemo, useEffect} from "react";
 
@@ -22,6 +23,9 @@ function App() {
     best: {
       genes: [],
       fitness: 0,
+      ssim: 0,
+      pixelDiff: 0,
+      diff: undefined,
       id: 0,
       probability: 0,
       phenotype: []
@@ -70,10 +74,15 @@ function App() {
         <RendererFromUrl className="one" name={"original-image"} onImageDrawn={handleUrlImageDrawn} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
         { imageFromUrl && 
           <RendererFromDrawing className="two" onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} ratioW={ratioW} ratioH={ratioH} drawingSteps={simulation.best.phenotype}/>        
+        }
+        { simulation.best.diff && 
+          <RendererFromData className="three" name={"diff-image"} width={width} height={height} ratioW={ratioW} ratioH={ratioH} data={simulation.best.diff}/>        
         }              
-      <GAInformation className="three" 
+      <GAInformation className="four" 
         generation={simulation.generation} 
         fitness={simulation.best.fitness} 
+        ssim={simulation.best.ssim}
+        pixelDiff={simulation.best.pixelDiff}
         idBest={simulation.best.id} 
         elapsedTimeForGeneration={simulation.elapsedTime}
         notImprovingSince={simulation.notImprovingSince}/>

@@ -2,7 +2,7 @@ import ssim, { Options } from "ssim.js";
 import pixelmatch from "pixelmatch";
 import {drawPolygon, moveVertex, Vertex} from "./common/geometry";
 import {AGworkerIn, AGworkerOut} from "./common/communication";
-import {buildPhenotypeFromGenes, Individual, randomNumberInRange} from "./common/ga";
+import {buildPhenotypeFromGenes, Individual, randomNumberInRange, Result} from "./common/ga";
 import { Context } from "vm";
 
 declare const self: Worker;
@@ -29,8 +29,11 @@ function createIndividual(genesSize: number, nbVertices: number, nbColor: number
     const ind: Individual = {
         id: Date.now(),
         genes: genes,
-        fitness: NaN,
-        probability: NaN,
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
         phenotype: []
     }
 
@@ -58,19 +61,24 @@ function evaluatePopulation(population: Individual[], nbVertices: number, nbColo
         const ind = population[i];
         const result = evaluate(ind, nbVertices, nbColor, originalImage, ctx);
         
-        evaluatedPopulation.push({
+        const evaluatedInd: Individual = {
             genes: [...ind.genes],
-            fitness: result,
-            probability: NaN,
+            fitness: result.fitness,
+            ssim: result.ssim,
+            pixelDiff: result.pixelDiff,
+            diff: result.diff,
+            probability: 0,
             id: ind.id,
             phenotype: [...ind.phenotype]
-        });
+        };
+
+        evaluatedPopulation.push(evaluatedInd);
     }
 
     return evaluatedPopulation;
 }
 
-function evaluate(ind: Individual, nbVertices: number, nbColor: number, image: ImageData, ctx: Context): number {
+function evaluate(ind: Individual, nbVertices: number, nbColor: number, image: ImageData, ctx: Context): Result {
     
     ind.phenotype = buildPhenotypeFromGenes(ind.genes, nbVertices, nbColor)
     
@@ -96,22 +104,28 @@ function evaluate(ind: Individual, nbVertices: number, nbColor: number, image: I
         downsample: 'original', //false / 'original' / 'fast'
         ssim: 'original'
     };
-    const result = ssim(image, generatedImage, options);
+    const ssimResult = ssim(image, generatedImage, options);
     
-    /*
     const canvas = new OffscreenCanvas(image.width, image.height);
     const diffContext = canvas.getContext('2d');
+    let nbPixelsDiff = 0;
+    let diff: ImageData | undefined = undefined;
     if (diffContext) {
-        const diff = diffContext.createImageData(image.width, image.height);
-        const nbPixelsDiff = pixelmatch(image.data, generatedImage.data, diff.data, image.width, image.height, {threshold: 0.1});
-        console.log("diff pixels: " + nbPixelsDiff);
+        diff = diffContext.createImageData(image.width, image.height);
+        nbPixelsDiff = pixelmatch(image.data, generatedImage.data, diff.data, image.width, image.height, {threshold: 0.1});
     }
-    */
-
-    const nbPixelsDiff = pixelmatch(image.data, generatedImage.data, null, image.width, image.height, {threshold: 0.1});
+    
     const ratioMatchingPixel = ((image.width * image.height) - nbPixelsDiff) / (image.width * image.height);
     
-    return (result.mssim * 0 + ratioMatchingPixel * 1) / 1;
+    const ratioSsim = 3;
+    const ratioPixel = 1;
+    const result: Result = {
+        fitness: (ssimResult.mssim * ratioSsim + ratioMatchingPixel * ratioPixel) / (ratioSsim + ratioPixel),
+        ssim: ssimResult.mssim,
+        pixelDiff: ratioMatchingPixel,
+        diff: diff
+    }
+    return result;
 }
 
 function convertFitnessIntoProbabilities(population: Individual[]): Individual[] {
@@ -154,20 +168,17 @@ function pickParent(population: Individual[]): Individual {
 function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
     const child: Individual = {
         genes: [],
-        fitness: NaN,
-        probability: NaN,
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
         id: Date.now(),
         phenotype: []
     };
 
-    //let probaToPickFromA = (a.fitness > b.fitness) ? 0.7 : ((a.fitness === b.fitness)  ? 0.5 : 0.3);
-    let probaToPickFromA = 0.5;
-    /*
-    for (let i = 0; i < a.genes.length; i++) {
-        const gene = (Math.random() < probaToPickFromA) ? a.genes[i] : b.genes[i];
-        child.genes.push(gene);
-    }
-    */
+    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
+    //let probaToPickFromA = 0.5;
 
     let i = 0;
     while (i < a.genes.length) {
@@ -175,7 +186,7 @@ function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: nu
         const relativeIndex = i % (nbVertices * 2 + nbColor); 
         const isVertex = relativeIndex < (nbVertices * 2);
         if (isVertex) {
-
+            // Copy vertex
             let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
             let v: Vertex = {
                 x: genes[i],
@@ -187,18 +198,17 @@ function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: nu
             i += 2;
         }
         else {
+            // Copy color
             let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
             child.genes.push(genes[i]);
             child.genes.push(genes[i+1]);
             child.genes.push(genes[i+2]);
-
-            const isAlpha = nbColor === 4 && (relativeIndex === (nbVertices * 2 + nbColor - 1));
-            if (isAlpha) {
-                child.genes.push(genes[i+3]);
-                i += 4;
-            }
-            else {
-                i += 3;
+            i += 3;
+            
+            const hasAlpha = nbColor === 4;
+            if (hasAlpha) {
+                child.genes.push(genes[i]);
+                i++;
             }
         }
     }
@@ -209,52 +219,80 @@ function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: nu
 function mutate(ind: Individual, nbVertices: number, nbColor: number, width: number, height: number, force: boolean): Individual {
     const mutant: Individual = {
         genes: [],
-        fitness: NaN,
-        probability: NaN,
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
         id: Date.now(),
         phenotype: []
     };
     
-    const probaToMutate = force ? 1.0 : 0.2;
+    const probaToMutate = force ? 1.0 : 0.1;
     let i = 0;
+    let swapBuffer: number[] = [];
+    const polygonSize = nbVertices * 2 + nbColor;
     while (i < ind.genes.length) {
-        if (Math.random() < probaToMutate) {         
-            const relativeIndex = i % (nbVertices * 2 + nbColor); 
-            const isVertex = relativeIndex < (nbVertices * 2);
-            if (isVertex) {
-                let v: Vertex = {
-                    x: ind.genes[i],
-                    y: ind.genes[i + 1]
-                };
-                                
-                let range = randomNumberInRange(-10, 10, false);
-                if (range > -1 && range <= 0) { range = -1}
-                if (range < 1 && range >= 0) { range = 1}
-                v = moveVertex(v, range, width, height);
-                mutant.genes.push(v.x);
-                mutant.genes.push(v.y);
-                i += 2;
+        if (Math.random() < probaToMutate) {     
+            const relativeIndex = i % polygonSize;   
+            const isStartingOfAPolygon = relativeIndex === 0;
+
+            // debugger; 
+
+            if (Math.random() < 0.1 && isStartingOfAPolygon) {
+                 // move polygon at the end for rendering
+                swapBuffer = swapBuffer.concat(ind.genes.slice(i, i + polygonSize));
+                i += polygonSize;
             }
             else {
-                const range = randomNumberInRange(-0.1, 0.1, false);
-                let c = ind.genes[i] + ind.genes[i] * range;
-                const isAlpha = nbColor === 4 && (relativeIndex === (nbVertices * 2 + nbColor - 1));
-                if (isAlpha) {
-                    c = Math.max(0, Math.min(c, 1));
+                // Modifiy polygon shape and color                  
+                const isVertexCoordinates = relativeIndex < (nbVertices * 2);               
+                const isStartingVertex = (relativeIndex % 2) === 0 && isVertexCoordinates;
+                const isColorInformation = relativeIndex >= (nbVertices * 2);
+
+                if (isStartingVertex) {
+                    //Modify the vertex
+                    let v: Vertex = {
+                        x: ind.genes[i],
+                        y: ind.genes[i + 1]
+                    };
+                                    
+                    let range = randomNumberInRange(-10, 10, false);
+                    if (range > -1 && range <= 0) { range = -1}
+                    if (range < 1 && range >= 0) { range = 1}
+                    v = moveVertex(v, range, width, height);
+                    mutant.genes.push(v.x);
+                    mutant.genes.push(v.y);
+                    i += 2;
+                }
+                else if (isColorInformation) {
+                    // Change color
+                    const range = randomNumberInRange(-0.1, 0.1, false);
+                    let c = ind.genes[i] + ind.genes[i] * range;
+                    const isAlpha = nbColor === 4 && (relativeIndex === (polygonSize - 1));
+                    if (isAlpha) {
+                        c = Math.max(0, Math.min(c, 1));
+                    }
+                    else {
+                        c = Math.round(c);
+                        c = Math.max(0, Math.min(c, 255));
+                    }
+                    mutant.genes.push(c);
+                    i++;
                 }
                 else {
-                    c = Math.round(c);
-                    c = Math.max(0, Math.min(c, 255));
+                    //y coordinate of a vertex do nothing to mutate it
+                    mutant.genes.push(ind.genes[i]);
+                    i++;
                 }
-                mutant.genes.push(c);
-                i++;
-            }
+            }         
         }
         else {
             mutant.genes.push(ind.genes[i]);
             i++;
-        }
+        }      
     }    
+    mutant.genes = mutant.genes.concat(swapBuffer);
     return mutant;
 }
 
@@ -327,13 +365,21 @@ self.addEventListener("message", e => {
                     // Add an previous individual that may be mutated
                     const happySelectInd = pickParent(previousPop);
                     const mutant: Individual = mutate(happySelectInd, msg.nbVertices, msg.nbColor, msg.renderingWidth, msg.renderingHeight, false);
-                    mutant.fitness = evaluate(mutant, msg.nbVertices, msg.nbColor, scaledOriginalImage, ctx);
+                    const result = evaluate(mutant, msg.nbVertices, msg.nbColor, scaledOriginalImage, ctx);
+                    mutant.fitness = result.fitness;
+                    mutant.ssim = result.ssim;
+                    mutant.pixelDiff = result.pixelDiff;
+                    mutant.diff = result.diff;
                     nextPop.push(mutant);
                 }
                 else if (rand < 0.3) {
                     // Create a new individual
                     const ind = createIndividual(msg.genesSize, msg.nbVertices, msg.nbColor, msg.renderingWidth, msg.renderingHeight);
-                    ind.fitness = evaluate(ind, msg.nbVertices, msg.nbColor, scaledOriginalImage, ctx);
+                    const result = evaluate(ind, msg.nbVertices, msg.nbColor, scaledOriginalImage, ctx);
+                    ind.fitness = result.fitness;
+                    ind.ssim = result.ssim;
+                    ind.pixelDiff = result.pixelDiff;
+                    ind.diff = result.diff;
                     nextPop.push(ind);
                 }
                 else {
@@ -342,7 +388,11 @@ self.addEventListener("message", e => {
                     const parentB = pickParent(previousPop);                    
                     let child = crossOver(parentA, parentB, msg.nbVertices, msg.nbColor);
                     child = mutate(child, msg.nbVertices, msg.nbColor, msg.renderingWidth, msg.renderingHeight, false);
-                    child.fitness = evaluate(child, msg.nbVertices, msg.nbColor, scaledOriginalImage, ctx);
+                    const result = evaluate(child, msg.nbVertices, msg.nbColor, scaledOriginalImage, ctx);
+                    child.fitness = result.fitness;
+                    child.ssim = result.ssim;
+                    child.pixelDiff = result.pixelDiff;
+                    child.diff = result.diff;
                     nextPop.push(child);
                 }
             }            

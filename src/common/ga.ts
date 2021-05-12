@@ -3,9 +3,19 @@ import { Polygon, Vertex } from "./geometry";
 export interface Individual {
     genes: number[];
     fitness: number;
+    ssim: number;
+    pixelDiff: number;
+    diff: ImageData | undefined;
     probability: number;
     id: number
-    phenotype: Polygon[]
+    phenotype: Polygon[];
+}
+
+export interface Result {
+    fitness: number;
+    ssim: number;
+    pixelDiff: number;
+    diff: ImageData | undefined;
 }
 
 export function randomNumberInRange(min: number, max: number, isInteger: boolean): number {
