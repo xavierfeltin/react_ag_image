@@ -18,6 +18,64 @@ export interface Result {
     diff: ImageData | undefined;
 }
 
+
+export function createEmptyIndividual(): Individual {
+    const ind: Individual = {
+        id: 0,
+        genes: [],
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
+        phenotype: []
+    }
+
+    return ind;
+}
+
+export function createIndividual(genesSize: number, nbVertices: number, nbColor: number, width: number, height: number): Individual {
+    const genes: number[] = [];
+    for (let i = 0; i < genesSize; i++) {
+        
+        const x = randomNumberInRange(0, width, true);
+        const y = randomNumberInRange(0, width, true);
+
+        for (let j = 0; j < nbVertices; j++) {
+            genes.push(x + randomNumberInRange(0, width / 2, true));
+            genes.push(y + randomNumberInRange(0, height / 2, true));
+        }
+
+        for (let j = 0; j < nbColor; j++) {
+            const c = j < 3 ? randomNumberInRange(0, 256, true) : randomNumberInRange(0.2, 1, false);
+            genes.push(c); 
+        }        
+    }
+   
+    const ind: Individual = {
+        id: Date.now(),
+        genes: genes,
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
+        phenotype: []
+    }
+
+    return ind;
+}
+
+export function generatePopulation(popSize: number, genesSize: number, nbVertices: number, nbColor: number, width: number, height: number): Individual[]
+{
+    let population = [];
+    for (let i = 0; i < popSize; i++) {
+        const ind = createIndividual( genesSize, nbVertices, nbColor, width, height);
+        population.push(ind);
+    }
+    return population;
+}
+
 export function randomNumberInRange(min: number, max: number, isInteger: boolean): number {
     let value = Math.random() * (max - min) + min;
 
@@ -57,3 +115,214 @@ export function buildPhenotypeFromGenes(genes: number[], nbVertices: number, nbC
     }
     return phenotype;
 }
+
+export function sortDescByFitness(population: Individual[]): Individual[] {
+    const sortFn = (a: Individual, b: Individual): number => {
+        return b.fitness - a.fitness;
+    };
+
+    return [...population].sort(sortFn);
+}
+
+export function sortDescByProbability(population: Individual[]): Individual[] {
+    const sortFn = (a: Individual, b: Individual): number => {
+        return a.probability - b.probability;
+    };
+
+    return [...population].sort(sortFn);
+}
+
+export function convertFitnessIntoProbabilities(population: Individual[]): Individual[] {
+    let sumFit = 0.0;
+    let scores = [];
+    let populationWithProba = [...population];
+
+    for (let ind of population) {
+        const fitness = ind.fitness * ind.fitness;
+        scores.push(fitness);
+        sumFit += fitness;
+    }
+
+    let previousProba = 0.0;
+    for (let i = 0; i < scores.length; i++) {
+        const relativeFitness = scores[i] / sumFit;
+        previousProba += relativeFitness;
+        populationWithProba[i].probability = previousProba; // cumulation of probabilities for fortune of wheel
+    }
+
+    // Round last probability to 1
+    const lastIndex = populationWithProba.length - 1;
+    populationWithProba[lastIndex].probability = 1.0;
+    return populationWithProba;
+}
+
+export function pickParent(population: Individual[]): Individual {
+    const rand = Math.random();
+    let i = 0;
+    while (i < population.length && population[i].probability <= rand) {
+        i++;
+    }
+
+    if (i === population.length) {
+        i = i - 1;
+    }
+    return population[i];
+}
+
+export function generateTournamentPool(population: Individual[], poolSize: number): Individual[] {
+    const pool: Individual[] = [];
+    for (let i = 0; i < poolSize; i++) {
+        const candidate = pickParent(population);
+        pool.push(candidate);
+    }
+    return pool;
+}
+
+export function pickParentFromTournament(population: Individual[], tournamentSize: number): Individual {
+    let best: Individual = createEmptyIndividual();
+    for (let i = 0; i < tournamentSize; i++) {
+        const index = Math.floor(Math.random() * population.length);
+        const candidate = population[index];
+        if (!best || candidate.fitness > best.fitness) {
+            best = candidate;
+        }
+    }
+    return best;
+}
+
+// Crossover with single point crossover
+/*
+function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+    const child: Individual = {
+        genes: [],
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
+        id: Date.now(),
+        phenotype: []
+    };
+
+    let ratio = 0.6;
+    const polygonSize = (nbVertices * 2 + nbColor);
+    const nbPolygons = nbVertices / polygonSize;
+    const splitIndex = Math.floor(nbPolygons * ratio) * polygonSize;
+    const primaryGenes = a.fitness > b.fitness ? a.genes : b.genes;
+    const secdondatyGenes = a.fitness > b.fitness ? b.genes : a.genes;
+
+    child.genes = child.genes.concat(primaryGenes.slice(0, splitIndex));
+    child.genes = child.genes.concat(secdondatyGenes.slice(splitIndex));
+
+    return child;
+}
+*/
+
+// Crossover on polygon granularity
+export function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+    const child: Individual = {
+        genes: [],
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
+        id: Date.now(),
+        phenotype: []
+    };
+
+    //let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
+    let probaToPickFromA = 0.5;
+
+    let i = 0;
+    while (i < a.genes.length) {
+        const polygonSize = (nbVertices * 2 + nbColor);
+        let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
+        child.genes = child.genes.concat(genes.slice(i, i + polygonSize));
+        i += polygonSize;
+    }
+
+    return child;
+}
+
+/*
+// Crossover on vertex granularity
+export function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+    const child: Individual = {
+        genes: [],
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
+        id: Date.now(),
+        phenotype: []
+    };
+
+    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
+    //let probaToPickFromA = 0.5;
+
+    let i = 0;
+    while (i < a.genes.length) {        
+        const relativeIndex = i % (nbVertices * 2 + nbColor); 
+        const isVertex = relativeIndex < (nbVertices * 2);
+        if (isVertex) {
+            // Copy vertex
+            let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
+            let v: Vertex = {
+                x: genes[i],
+                y: genes[i + 1]
+            };
+                            
+            child.genes.push(v.x);
+            child.genes.push(v.y);
+            i += 2;
+        }
+        else {
+            // Copy color
+            let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
+            child.genes.push(genes[i]);
+            child.genes.push(genes[i+1]);
+            child.genes.push(genes[i+2]);
+            i += 3;
+            
+            const hasAlpha = nbColor === 4;
+            if (hasAlpha) {
+                child.genes.push(genes[i]);
+                i++;
+            }
+        }
+    }
+
+    return child;
+}
+*/
+
+/*
+// Granularity of each gene
+export function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+    const child: Individual = {
+        genes: [],
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
+        id: Date.now(),
+        phenotype: []
+    };
+
+    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
+    //let probaToPickFromA = 0.5;
+
+    let i = 0;
+    while (i < a.genes.length) {        
+        let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
+        child.genes.push(genes[i]);
+        i++;
+    }
+
+    return child;
+}
+*/
+

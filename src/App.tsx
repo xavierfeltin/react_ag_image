@@ -7,11 +7,13 @@ import {useState, useCallback, useMemo, useEffect} from "react";
 
 import MyWorker from './test.worker';
 import {AGworkerIn, AGworkerOut} from "./common/communication";
+import { InputImageUrl } from './InputImageUrl';
 
 function App() {
 
   const width = 256;
   const height = 256;
+  const limitImageSize = 256;
 
   const simWidth = 64;
   const simHeight = 64;
@@ -40,8 +42,15 @@ function App() {
     elapsedTime: 0,
     notImprovingSince: 0
   });
+  const [imageUrl, setUrl] = useState<string>("");
   const [imageFromUrl, setImage] = useState<ImageData|null>(null);
   const myWorkerInstance: Worker = useMemo(() => new MyWorker(), []); //new MyWorker();// ;//
+
+  const handleOnClickLoadImage = useCallback((e: React.FormEvent<HTMLFormElement>) => {
+    if(e) e.preventDefault();
+    console.log(e.targe);
+    //setUrl(url);
+  }, []);
 
   const handleUrlImageDrawn = useCallback((img: CanvasImageSource) => {
     console.log("handleUrlImageDrawn");
@@ -87,14 +96,15 @@ function App() {
   }, [myWorkerInstance]);
 
   return (
-    <div className="wrapper">
-        <RendererFromUrl className="one" name={"original-image"} onImageDrawn={handleUrlImageDrawn} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
-        { imageFromUrl && 
-          <RendererFromDrawing className="two" onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} ratioW={ratioW} ratioH={ratioH} drawingSteps={simulation.best.phenotype}/>        
-        }
-        { simulation.best.diff && 
-          <RendererFromData className="three" name={"diff-image"} width={width} height={height} ratioW={ratioW} ratioH={ratioH} data={simulation.best.diff}/>        
-        }          
+    <div className="wrapper">       
+      <InputImageUrl onSubmit={handleOnClickLoadImage}/>
+      <RendererFromUrl className="one" name={"original-image"} onImageDrawn={handleUrlImageDrawn} limit={256} url="https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"/>
+      { imageFromUrl && 
+        <RendererFromDrawing className="two" onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={width} height={height} ratioW={ratioW} ratioH={ratioH} drawingSteps={simulation.best.phenotype}/>        
+      }
+      { simulation.best.diff && 
+        <RendererFromData className="three" name={"diff-image"} width={width} height={height} ratioW={ratioW} ratioH={ratioH} data={simulation.best.diff}/>        
+      }          
       <GAInformation className="four" 
         generation={simulation.generation} 
         fitness={simulation.best.fitness} 
