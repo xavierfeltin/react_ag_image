@@ -11,10 +11,11 @@ export interface RendererProps {
     className: string;
 };
 
-function draw(ctx: Context, width: number, height: number, ratioW: number, ratioH: number, data: ImageData): void {    
+function draw(ctx: Context, width: number, height: number, ratioW: number, ratioH: number, data: ImageData, canvas: HTMLCanvasElement): void {    
     ctx.clearRect(0, 0, width, height);
-    ctx.scale(ratioW, ratioH);
     ctx.putImageData(data, 0, 0);
+    ctx.scale(ratioW, ratioH);        
+    ctx.drawImage(canvas, 0, 0);    
 }
 
 export function RendererFromData({ name, width, height, ratioW, ratioH, data, className }: RendererProps) {
@@ -32,7 +33,7 @@ export function RendererFromData({ name, width, height, ratioW, ratioH, data, cl
         canvas.height = height;
 
         if (ctx) {            
-            draw(ctx, width, height, ratioW, ratioH, data);
+            draw(ctx, width, height, ratioW, ratioH, data, canvas);
         }
         else {
             console.error("ctx is null the drawing can not be done");

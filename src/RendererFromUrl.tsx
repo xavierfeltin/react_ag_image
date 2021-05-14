@@ -4,7 +4,7 @@ export interface RendererProps {
     name: string;  
     url: string;
     limit?: number;
-    onImageDrawn: (img: ImageData) => void;
+    onImageDrawn: (img: CanvasImageSource) => void;
     className: string;
 };
 
@@ -28,7 +28,7 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn, className }: R
         const ctx = canvas.getContext('2d');
         
         const img = new Image();
-        img.crossOrigin = "anonymous";  // This enables CORS
+        img.crossOrigin = "Anonymous";  // This enables CORS
         img.onload = () => {
             const { width, height } = getLimitDimensions(img.width, img.height, limit);
 
@@ -41,8 +41,7 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn, className }: R
 
             if (ctx) {
                 ctx.drawImage(img, 0, 0, width, height);
-                const image = ctx.getImageData(0, 0, width, height);
-                onImageDrawn?.(image);
+                onImageDrawn?.(img);
             }
             else {
                 console.error("ctx is null the image can not be loaded");

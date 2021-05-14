@@ -8,20 +8,35 @@ import { Context } from "vm";
 declare const self: Worker;
 export default {} as typeof Worker & { new (): Worker };
 
+function createEmptyIndividual(): Individual {
+    const ind: Individual = {
+        id: 0,
+        genes: [],
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
+        phenotype: []
+    }
+
+    return ind;
+}
 
 function createIndividual(genesSize: number, nbVertices: number, nbColor: number, width: number, height: number): Individual {
     const genes: number[] = [];
     for (let i = 0; i < genesSize; i++) {
         
+        const x = randomNumberInRange(0, width, true);
+        const y = randomNumberInRange(0, width, true);
+
         for (let j = 0; j < nbVertices; j++) {
-            const x = randomNumberInRange(0, width, true);
-            const y = randomNumberInRange(0, height, true);
-            genes.push(x);
-            genes.push(y);
+            genes.push(x + randomNumberInRange(0, width / 2, true));
+            genes.push(y + randomNumberInRange(0, height / 2, true));
         }
 
         for (let j = 0; j < nbColor; j++) {
-            const c = j < 3 ? randomNumberInRange(0, 256, true) : randomNumberInRange(0, 1, false);
+            const c = j < 3 ? randomNumberInRange(0, 256, true) : randomNumberInRange(0.2, 1, false);
             genes.push(c); 
         }        
     }
@@ -80,7 +95,7 @@ function evaluatePopulation(population: Individual[], nbVertices: number, nbColo
 
 function evaluate(ind: Individual, nbVertices: number, nbColor: number, image: ImageData, ctx: Context): Result {
     
-    ind.phenotype = buildPhenotypeFromGenes(ind.genes, nbVertices, nbColor)
+    ind.phenotype = buildPhenotypeFromGenes(ind.genes, nbVertices, nbColor);
     
     // Clean the drawing space
     ctx.clearRect(0, 0, image.width, image.height);
@@ -105,6 +120,12 @@ function evaluate(ind: Individual, nbVertices: number, nbColor: number, image: I
         ssim: 'original'
     };
     const ssimResult = ssim(image, generatedImage, options);
+
+   /*
+    const ssimResult = {
+        mssim: 0
+    };
+    */
     
     const canvas = new OffscreenCanvas(image.width, image.height);
     const diffContext = canvas.getContext('2d');
@@ -117,8 +138,11 @@ function evaluate(ind: Individual, nbVertices: number, nbColor: number, image: I
     
     const ratioMatchingPixel = ((image.width * image.height) - nbPixelsDiff) / (image.width * image.height);
     
-    const ratioSsim = 3;
-    const ratioPixel = 1;
+    //let diff: ImageData | undefined = undefined;
+    //const ratioMatchingPixel = 0; 
+    
+    const ratioSsim = 1;
+    const ratioPixel = 0;
     const result: Result = {
         fitness: (ssimResult.mssim * ratioSsim + ratioMatchingPixel * ratioPixel) / (ratioSsim + ratioPixel),
         ssim: ssimResult.mssim,
@@ -165,6 +189,84 @@ function pickParent(population: Individual[]): Individual {
     return population[i];
 }
 
+function generateTournamentPool(population: Individual[], poolSize: number): Individual[] {
+    const pool: Individual[] = [];
+    for (let i = 0; i < poolSize; i++) {
+        const candidate = pickParent(population);
+        pool.push(candidate);
+    }
+    return pool;
+}
+
+function pickParentFromTournament(population: Individual[], tournamentSize: number): Individual {
+    let best: Individual = createEmptyIndividual();
+    for (let i = 0; i < tournamentSize; i++) {
+        const index = Math.floor(Math.random() * population.length);
+        const candidate = population[index];
+        if (!best || candidate.fitness > best.fitness) {
+            best = candidate;
+        }
+    }
+    return best;
+}
+
+// Crossover with single point crossover
+/*
+function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+    const child: Individual = {
+        genes: [],
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
+        id: Date.now(),
+        phenotype: []
+    };
+
+    let ratio = 0.6;
+    const polygonSize = (nbVertices * 2 + nbColor);
+    const nbPolygons = nbVertices / polygonSize;
+    const splitIndex = Math.floor(nbPolygons * ratio) * polygonSize;
+    const primaryGenes = a.fitness > b.fitness ? a.genes : b.genes;
+    const secdondatyGenes = a.fitness > b.fitness ? b.genes : a.genes;
+
+    child.genes = child.genes.concat(primaryGenes.slice(0, splitIndex));
+    child.genes = child.genes.concat(secdondatyGenes.slice(splitIndex));
+
+    return child;
+}
+*/
+
+// Crossover on polygon granularity
+function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+    const child: Individual = {
+        genes: [],
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
+        id: Date.now(),
+        phenotype: []
+    };
+
+    //let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
+    let probaToPickFromA = 0.5;
+
+    let i = 0;
+    while (i < a.genes.length) {
+        const polygonSize = (nbVertices * 2 + nbColor);
+        let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
+        child.genes = child.genes.concat(genes.slice(i, i + polygonSize));
+        i += polygonSize;
+    }
+
+    return child;
+}
+
+/*
+// Crossover on vertex granularity
 function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
     const child: Individual = {
         genes: [],
@@ -181,8 +283,7 @@ function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: nu
     //let probaToPickFromA = 0.5;
 
     let i = 0;
-    while (i < a.genes.length) {
-                
+    while (i < a.genes.length) {        
         const relativeIndex = i % (nbVertices * 2 + nbColor); 
         const isVertex = relativeIndex < (nbVertices * 2);
         if (isVertex) {
@@ -215,6 +316,35 @@ function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: nu
 
     return child;
 }
+*/
+
+/*
+// Granularity of each gene
+function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+    const child: Individual = {
+        genes: [],
+        fitness: 0,
+        ssim: 0,
+        pixelDiff: 0,
+        diff: undefined,
+        probability: 0,
+        id: Date.now(),
+        phenotype: []
+    };
+
+    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
+    //let probaToPickFromA = 0.5;
+
+    let i = 0;
+    while (i < a.genes.length) {        
+        let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
+        child.genes.push(genes[i]);
+        i++;
+    }
+
+    return child;
+}
+*/
 
 function mutate(ind: Individual, nbVertices: number, nbColor: number, width: number, height: number, force: boolean): Individual {
     const mutant: Individual = {
@@ -228,7 +358,7 @@ function mutate(ind: Individual, nbVertices: number, nbColor: number, width: num
         phenotype: []
     };
     
-    const probaToMutate = force ? 1.0 : 0.1;
+    const probaToMutate = force ? 1.0 : 0.01;
     let i = 0;
     let swapBuffer: number[] = [];
     const polygonSize = nbVertices * 2 + nbColor;
@@ -239,7 +369,7 @@ function mutate(ind: Individual, nbVertices: number, nbColor: number, width: num
 
             // debugger; 
 
-            if (Math.random() < 0.1 && isStartingOfAPolygon) {
+            if (Math.random() < 0.05 && isStartingOfAPolygon) {
                  // move polygon at the end for rendering
                 swapBuffer = swapBuffer.concat(ind.genes.slice(i, i + polygonSize));
                 i += polygonSize;
@@ -275,7 +405,7 @@ function mutate(ind: Individual, nbVertices: number, nbColor: number, width: num
                     }
                     else {
                         c = Math.round(c);
-                        c = Math.max(0, Math.min(c, 255));
+                        c = Math.max(0.2, Math.min(c, 255));
                     }
                     mutant.genes.push(c);
                     i++;
@@ -341,10 +471,7 @@ self.addEventListener("message", e => {
         postMessage(response);
     }
     else {
-        const ratioW = msg.renderingWidth / originalImage.width;
-        const ratioH = msg.renderingHeight / originalImage.height;
-        ctxOriginal.scale(ratioW, ratioH);
-        ctxOriginal.putImageData(originalImage, 0, 0);        
+        ctxOriginal.putImageData(originalImage, 0, 0);
         const scaledOriginalImage = ctxOriginal.getImageData(0, 0, msg.renderingWidth, msg.renderingHeight);
 
         let nextPop: Individual[] = [];        
@@ -359,9 +486,12 @@ self.addEventListener("message", e => {
             }                        
             previousPop = sortDescByProbability(previousPop);
 
+            const poolSize = Math.round(previousPop.length * 0.2);
+            const tournamentPool = generateTournamentPool(previousPop, poolSize);
+            
             for (let i = 0; i < msg.populationSize; i++) {
                 const rand = Math.random();
-                if (rand < 0.15) {
+                if (rand < 0.05) {
                     // Add an previous individual that may be mutated
                     const happySelectInd = pickParent(previousPop);
                     const mutant: Individual = mutate(happySelectInd, msg.nbVertices, msg.nbColor, msg.renderingWidth, msg.renderingHeight, false);
@@ -372,7 +502,7 @@ self.addEventListener("message", e => {
                     mutant.diff = result.diff;
                     nextPop.push(mutant);
                 }
-                else if (rand < 0.3) {
+                else if (rand < 0.15) {
                     // Create a new individual
                     const ind = createIndividual(msg.genesSize, msg.nbVertices, msg.nbColor, msg.renderingWidth, msg.renderingHeight);
                     const result = evaluate(ind, msg.nbVertices, msg.nbColor, scaledOriginalImage, ctx);
@@ -384,8 +514,10 @@ self.addEventListener("message", e => {
                 }
                 else {
                     // Create a child
-                    const parentA = pickParent(previousPop);
-                    const parentB = pickParent(previousPop);                    
+                    // const parentA = pickParent(previousPop);
+                    // const parentB = pickParent(previousPop);
+                    const parentA = pickParentFromTournament(tournamentPool, 3);
+                    const parentB = pickParentFromTournament(tournamentPool, 3);                    
                     let child = crossOver(parentA, parentB, msg.nbVertices, msg.nbColor);
                     child = mutate(child, msg.nbVertices, msg.nbColor, msg.renderingWidth, msg.renderingHeight, false);
                     const result = evaluate(child, msg.nbVertices, msg.nbColor, scaledOriginalImage, ctx);

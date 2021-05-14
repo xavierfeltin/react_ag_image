@@ -16,8 +16,13 @@ function App() {
   const simWidth = 64;
   const simHeight = 64;
 
-  const ratioW = 256 / simWidth;
-  const ratioH = 256 / simHeight;
+  const ratioW = width / simWidth;
+  const ratioH = height / simHeight;
+
+  /*
+  const ratioSimW = simWidth / width;
+  const ratioSimH = simHeight / height;
+  */
 
   const [simulation, setSimulation] = useState<AGworkerOut>({
     best: {
@@ -38,8 +43,20 @@ function App() {
   const [imageFromUrl, setImage] = useState<ImageData|null>(null);
   const myWorkerInstance: Worker = useMemo(() => new MyWorker(), []); //new MyWorker();// ;//
 
-  const handleUrlImageDrawn = useCallback((img: ImageData) => {
-    setImage(img);
+  const handleUrlImageDrawn = useCallback((img: CanvasImageSource) => {
+    console.log("handleUrlImageDrawn");
+    const canvas = new OffscreenCanvas(simWidth, simHeight); 
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      // Rescale the image for the simulation
+      ctx.scale(0.25, 0.25);
+      ctx.drawImage(img, 0, 0, width, height);
+      const image = ctx.getImageData(0, 0, simWidth, simHeight);
+      setImage(image);  
+    } 
+    else {
+      console.error("ctx from url image for resizing could not be created");
+    }   
   }, []);
 
   const handleGeneratedImageDrawn = useCallback((img: ImageData) => {
@@ -77,7 +94,7 @@ function App() {
         }
         { simulation.best.diff && 
           <RendererFromData className="three" name={"diff-image"} width={width} height={height} ratioW={ratioW} ratioH={ratioH} data={simulation.best.diff}/>        
-        }              
+        }          
       <GAInformation className="four" 
         generation={simulation.generation} 
         fitness={simulation.best.fitness} 
