@@ -1,0 +1,12 @@
+input {
+    width: 400px;
+    vertical-align: middle;
+    padding: 5px 0px 5px 0px !important;
+    margin-right: 5px;
+}
+
+button {
+    height: 30px;
+    padding: 5px;
+    vertical-align: middle;
+}

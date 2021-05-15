@@ -18,6 +18,17 @@ export interface Polygon {
     color: number[];
 }
 
+export interface Image {
+    image: ImageData|null;
+    renderedWidth: number;
+    renderedHeight: number;
+    offscreenWidth: number;
+    offscreenHeight: number;
+    ratioOffscreenWidth: number; // ratio to limit
+    ratioOffscreenHeight: number; // ratio to limit
+    limitOffscreen: number;
+}
+
 export function getRGBAFromColor(c: number[]): string {
     let color = "rgb(0, 0, 0";
     if (c.length === 3) {
@@ -89,3 +100,17 @@ export function moveVertex(v: Vertex, range: number, width: number, height: numb
 
       return polygon;
   }
+
+ export function getLimitDimensions(width: number, height: number, limit?: number): {width: number, height: number, ratio: number} {
+    const ratioImage = height / width;
+    if (limit && (width >= limit || height >= limit)) {        
+        if (ratioImage > 1) {
+            return { width: Math.round(limit / ratioImage), height: limit, ratio: ratioImage };
+        }
+        else {
+            return { width: limit, height: Math.round(limit * ratioImage), ratio: ratioImage};
+        }
+        
+    }
+    return { width: width, height: height, ratio: ratioImage};
+}

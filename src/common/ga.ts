@@ -39,7 +39,7 @@ export function createIndividual(genesSize: number, nbVertices: number, nbColor:
     for (let i = 0; i < genesSize; i++) {
         
         const x = randomNumberInRange(0, width, true);
-        const y = randomNumberInRange(0, width, true);
+        const y = randomNumberInRange(0, height, true);
 
         for (let j = 0; j < nbVertices; j++) {
             genes.push(x + randomNumberInRange(0, width / 2, true));
@@ -183,7 +183,7 @@ export function pickParentFromTournament(population: Individual[], tournamentSiz
     for (let i = 0; i < tournamentSize; i++) {
         const index = Math.floor(Math.random() * population.length);
         const candidate = population[index];
-        if (!best || candidate.fitness > best.fitness) {
+        if (best.id === 0 || candidate.fitness > best.fitness) {
             best = candidate;
         }
     }

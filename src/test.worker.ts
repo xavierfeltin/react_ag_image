@@ -4,7 +4,7 @@ import {drawPolygon, moveVertex, Vertex} from "./common/geometry";
 import {AGworkerIn, AGworkerOut} from "./common/communication";
 import {buildPhenotypeFromGenes, Individual, randomNumberInRange, generateTournamentPool,
     Result, generatePopulation, convertFitnessIntoProbabilities, sortDescByProbability, createIndividual,
-    pickParent, pickParentFromTournament, sortDescByFitness, crossOver} from "./common/ga";
+    pickParent, pickParentFromTournament, sortDescByFitness, crossOver, createEmptyIndividual} from "./common/ga";
 import { Context } from "vm";
 
 declare const self: Worker;
@@ -86,7 +86,7 @@ function evaluate(ind: Individual, nbVertices: number, nbColor: number, image: I
     //let diff: ImageData | undefined = undefined;
     //const ratioMatchingPixel = 0; 
     
-    const ratioSsim = 10;
+    const ratioSsim = 5;
     const ratioPixel = 1;
     const result: Result = {
         fitness: (ssimResult.mssim * ratioSsim + ratioMatchingPixel * ratioPixel) / (ratioSsim + ratioPixel),
@@ -196,6 +196,7 @@ self.addEventListener("message", e => {
         console.error("no ctx to draw the image");
 
         const response: AGworkerOut = {
+            isRunning: true,
             best: previousBest,
             population: [...previousPop],
             generation: msg.generation,
@@ -223,14 +224,14 @@ self.addEventListener("message", e => {
 
             const poolSize = Math.round(previousPop.length * 0.2);
             const tournamentPool = generateTournamentPool(previousPop, poolSize);
-            
+
             for (let i = 0; i < msg.populationSize; i++) {
                 const rand = Math.random();
                 if (rand < 0.1) {
                     // Add an previous individual that may be mutated
                     const happySelectInd = pickParent(previousPop);
                     const mutant: Individual = mutate(happySelectInd, msg.nbVertices, msg.nbColor, msg.renderingWidth, msg.renderingHeight, false);
-                    const result = evaluate(mutant, msg.nbVertices, msg.nbColor, scaledOriginalImage, ctx);
+                    const result = evaluate(mutant, msg.nbVertices, msg.nbColor, scaledOriginalImage, ctx);                    
                     mutant.fitness = result.fitness;
                     mutant.ssim = result.ssim;
                     mutant.pixelDiff = result.pixelDiff;
@@ -264,7 +265,7 @@ self.addEventListener("message", e => {
                 }
             }            
         }
-    
+            
         nextPop = sortDescByFitness(nextPop);
         
         let end = (new Date()).getTime();
@@ -280,8 +281,9 @@ self.addEventListener("message", e => {
             best = nextPop[0];
             nonImprovingSince = 0;
         }
-
+        
         const response: AGworkerOut = {
+            isRunning: true,
             best: best,
             population: nextPop,
             generation: msg.generation + 1,

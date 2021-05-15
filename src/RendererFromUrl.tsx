@@ -1,24 +1,13 @@
 import { useEffect, useRef } from 'react';
+import { getLimitDimensions } from './common/geometry';
 
 export interface RendererProps {
     name: string;  
     url: string;
     limit?: number;
-    onImageDrawn: (img: CanvasImageSource) => void;
+    onImageDrawn: (img: CanvasImageSource, renderedWidth: number, renderedHeight: number) => void;
     className: string;
 };
-
-function getLimitDimensions(width: number, height: number, limit?: number): {width: number, height: number} {
-    if (limit && width >= limit && height >= limit) {
-        const ratio = width / height
-  
-        if (ratio > 1) {
-            return { width: Math.round(limit / ratio), height: limit }
-        }
-        return { width: limit, height: Math.round(limit * ratio) }
-    }
-    return { width, height }
-}
 
 export function RendererFromUrl({ name, url, limit, onImageDrawn, className }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -30,8 +19,7 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn, className }: R
         const img = new Image();
         img.crossOrigin = "Anonymous";  // This enables CORS
         img.onload = () => {
-            const { width, height } = getLimitDimensions(img.width, img.height, limit);
-
+            const { width, height } = getLimitDimensions(img.width, img.height, limit);            
             if (width === 0 || height === 0) {
                 console.error("Fail to load the image");
             }
@@ -41,7 +29,7 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn, className }: R
 
             if (ctx) {
                 ctx.drawImage(img, 0, 0, width, height);
-                onImageDrawn?.(img);
+                onImageDrawn?.(img, width, height);
             }
             else {
                 console.error("ctx is null the image can not be loaded");

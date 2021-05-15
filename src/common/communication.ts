@@ -1,6 +1,7 @@
 import { Individual } from "./ga";
 
 export interface AGworkerIn {
+    isRunning: boolean;
     image: ImageData;
     populationSize: number;
     genesSize: number;
@@ -15,6 +16,7 @@ export interface AGworkerIn {
 };
 
 export interface AGworkerOut {
+    isRunning: boolean;
     best: Individual;
     population: Individual[];
     generation: number;
