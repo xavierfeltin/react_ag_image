@@ -41,13 +41,16 @@ function App() {
     image: null, renderedWidth: 0, renderedHeight: 0, ratioOffscreenWidth: 0, ratioOffscreenHeight: 0, offscreenWidth: 0, offscreenHeight: 0, limitOffscreen: 0});
 
   const [myWorkerInstance, setWorker] = useState<Worker | null>(null); 
+  const [isStopped, setStop] = useState<boolean>(true);
 
   const handleSelectUrl = useCallback((url :string) => {
-    setWorker(new MyWorker());
-    setUrl(url);    
+    setStop(false);
+    setUrl(url);
   }, []);
 
   const handleStop = useCallback(() => {
+    setStop(true); 
+
     // Reset simulation
     if (myWorkerInstance) {
       myWorkerInstance.terminate();
@@ -72,6 +75,8 @@ function App() {
   }, [myWorkerInstance]);
 
   const handleUrlImageDrawn = useCallback((img: CanvasImageSource, renderedWidth: number, renderedHeight: number) => {
+    setWorker(new MyWorker());
+    
     const imageWidth: number = img.width as number;
     const imageHeight: number = img.height as number;
 
@@ -101,6 +106,10 @@ function App() {
     else {
       console.error("ctx from url image for resizing could not be created");
     }   
+  }, []);
+
+  const handleLoadingImageError = useCallback(() => {
+    setStop(true);  
   }, []);
 
   const handleGeneratedImageDrawn = useCallback((img: ImageData) => {    
@@ -136,9 +145,9 @@ function App() {
 
   return (
     <div className="wrapper">       
-      <InputImageUrl className="one" start={handleSelectUrl} stop={handleStop}/>
+      <InputImageUrl className="one" start={handleSelectUrl} stop={handleStop} isStopped={isStopped}/>
       { imageUrl &&
-        <RendererFromUrl className="two" name={"original-image"} onImageDrawn={handleUrlImageDrawn} limit={limitImageSize} url={imageUrl}/>
+        <RendererFromUrl className="two" classNameOnError="twoExpanded" name={"original-image"} onImageDrawn={handleUrlImageDrawn} onLoadingError={handleLoadingImageError} limit={limitImageSize} url={imageUrl}/>
       }
       { imageFromUrl.image && 
         <RendererFromDrawing className="three" onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} drawingSteps={simulation.best.phenotype}/>        

@@ -4,21 +4,19 @@ import React, {useEffect, useState} from 'react';
 export interface InputImageProps {
     start: (url: string) => void;
     stop: () => void;
+    isStopped: boolean;
     className: string;
 };
 
-export function InputImageUrl({start, stop, className}: InputImageProps) {
+export function InputImageUrl({start, stop, isStopped, className}: InputImageProps) {
     const [url, setUrl] = useState<string>('https://my-image-url');
-    const [isStopped, setStopped] = useState<boolean>(true);
-
+  
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      setStopped(false);
       start && start(url);
     }
 
     const onStop = () => {
-        setStopped(true);
         stop && stop();
     }
 
