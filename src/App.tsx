@@ -46,10 +46,13 @@ function App() {
   const handleSelectUrl = useCallback((url :string) => {
     setStop(false);
     setUrl(url);
+    console.log("[handleSelectUrl] change URL into " + url);
   }, []);
 
   const handleStop = useCallback(() => {
+    console.log("[handleStop] stop the simulation");
     setStop(true); 
+    setUrl("");
 
     // Reset simulation
     if (myWorkerInstance) {
@@ -75,6 +78,7 @@ function App() {
   }, [myWorkerInstance]);
 
   const handleUrlImageDrawn = useCallback((img: CanvasImageSource, renderedWidth: number, renderedHeight: number) => {
+    console.log("[handleUrlImageDrawn] image loaded start worker!");
     setWorker(new MyWorker());
     
     const imageWidth: number = img.width as number;
@@ -109,6 +113,7 @@ function App() {
   }, []);
 
   const handleLoadingImageError = useCallback(() => {
+    console.log("[handleLoadingImageError] error when loading the image");
     setStop(true);  
   }, []);
 
