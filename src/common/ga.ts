@@ -18,6 +18,27 @@ export interface Result {
     diff: ImageData | undefined;
 }
 
+export interface Configuration {
+    population: number;
+    selectCutoff: number;
+    keepPreviousRatio: number;
+    newIndividualRatio: number;
+    crossoverParentRatio: number;
+    mutationRate: number;
+    vertexMovement: number;
+    colorModificationRate: number;
+    enableSsim: boolean;
+    enablePixelDiff: boolean;
+    ratioSsim: number;
+    ratioPixelDiff: number;
+    enableTransparency: boolean;
+    nbVertex: number;
+    nbPolygons: number;
+    // Maybe to add later in configuration
+    //selectParentMode //tournament / fortune wheel
+    //crossOVeMode //by polygone / vertex / coordinate
+}
+
 
 export function createEmptyIndividual(): Individual {
     const ind: Individual = {
@@ -219,7 +240,7 @@ function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: nu
 */
 
 // Crossover on polygon granularity
-export function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+export function crossOver(a: Individual, b: Individual, parentRatio: number, nbVertices: number, nbColor: number): Individual {
     const child: Individual = {
         genes: [],
         fitness: 0,
@@ -231,9 +252,8 @@ export function crossOver(a: Individual, b: Individual, nbVertices: number, nbCo
         phenotype: []
     };
 
-    //let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
-    let probaToPickFromA = 0.5;
-
+    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? parentRatio : 1 - parentRatio);
+   
     let i = 0;
     while (i < a.genes.length) {
         const polygonSize = (nbVertices * 2 + nbColor);
@@ -247,7 +267,7 @@ export function crossOver(a: Individual, b: Individual, nbVertices: number, nbCo
 
 /*
 // Crossover on vertex granularity
-export function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+export function crossOver(a: Individual, b: Individual, parentRatio: number, nbVertices: number, nbColor: number): Individual {
     const child: Individual = {
         genes: [],
         fitness: 0,
@@ -259,9 +279,8 @@ export function crossOver(a: Individual, b: Individual, nbVertices: number, nbCo
         phenotype: []
     };
 
-    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
-    //let probaToPickFromA = 0.5;
-
+    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? parentRatio : 1 - parentRatio);
+    
     let i = 0;
     while (i < a.genes.length) {        
         const relativeIndex = i % (nbVertices * 2 + nbColor); 
@@ -300,7 +319,7 @@ export function crossOver(a: Individual, b: Individual, nbVertices: number, nbCo
 
 /*
 // Granularity of each gene
-export function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+export function crossOver(a: Individual, b: Individual, parentRatio: number, nbVertices: number, nbColor: number): Individual {
     const child: Individual = {
         genes: [],
         fitness: 0,
@@ -312,8 +331,7 @@ export function crossOver(a: Individual, b: Individual, nbVertices: number, nbCo
         phenotype: []
     };
 
-    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? 0.5 : 0.4);
-    //let probaToPickFromA = 0.5;
+    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? parentRatio : 1 - parentRatio);
 
     let i = 0;
     while (i < a.genes.length) {        
@@ -325,4 +343,3 @@ export function crossOver(a: Individual, b: Individual, nbVertices: number, nbCo
     return child;
 }
 */
-

@@ -17,8 +17,6 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn, onLoadingError
     const [isErrorOnLoad, setError] = useState<boolean>(false);
 
     useEffect(() => {        
-        console.log("[handleLoadingImageError] Load an image");
-
         setError(false);
         const canvas = canvasRef.current as HTMLCanvasElement;
         if (canvas) {
@@ -49,7 +47,7 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn, onLoadingError
                 onLoadingError();
             }    
         }
-    }, [url, limit, onImageDrawn]);
+    }, [url, limit, onImageDrawn, onLoadingError]);
 
 
 

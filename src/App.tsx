@@ -1,5 +1,5 @@
 import './App.css';
-import {useState, useCallback, useMemo, useEffect} from "react";
+import {useState, useCallback, useEffect} from "react";
 
 import MyWorker from './test.worker';
 import {AGworkerIn, AGworkerOut} from "./common/communication";
@@ -9,10 +9,30 @@ import { RendererFromUrl } from './RendererFromUrl';
 import { RendererFromDrawing } from './RendererFromDrawing';
 import { RendererFromData } from './RendererFromData';
 import { GAInformation } from './GAInformation';
+import { GAConfiguration } from './GAConfiguration';
+import { Configuration } from './common/ga';
 
 function App() {
 
   const limitImageSize = 256;
+
+  const [configuration, setConfiguration] = useState<Configuration>({
+    population: 0,
+    selectCutoff: 0,
+    keepPreviousRatio: 0,
+    newIndividualRatio: 0,
+    crossoverParentRatio: 0,
+    mutationRate: 0,
+    vertexMovement: 0,
+    colorModificationRate: 0,
+    enableSsim: true,
+    enablePixelDiff: true,
+    ratioSsim: 0,
+    ratioPixelDiff: 0,
+    enableTransparency: true,
+    nbVertex: 0,
+    nbPolygons: 0
+  });
 
   const [simulation, setSimulation] = useState<AGworkerOut>({
     isRunning: false,
@@ -44,13 +64,12 @@ function App() {
   const [isStopped, setStop] = useState<boolean>(true);
 
   const handleSelectUrl = useCallback((url :string) => {
+    console.log("Start with " + JSON.stringify(configuration));
     setStop(false);
     setUrl(url);
-    console.log("[handleSelectUrl] change URL into " + url);
   }, []);
 
   const handleStop = useCallback(() => {
-    console.log("[handleStop] stop the simulation");
     setStop(true); 
     setUrl("");
 
@@ -123,11 +142,8 @@ function App() {
       const message: AGworkerIn = {
         isRunning: simulation.isRunning,
         image: imageFromUrl.image, 
-        populationSize: 50,
-        genesSize: 125,
-        nbVertices: 3,
+        configuration: configuration,
         notImprovingSince: simulation.notImprovingSince,
-        nbColor: 4,
         best: simulation.best,
         population: simulation.population,
         generation: simulation.generation,
@@ -137,7 +153,12 @@ function App() {
 
       myWorkerInstance.postMessage(message);
     }
-  }, [simulation, imageFromUrl, myWorkerInstance]);
+  }, [simulation, imageFromUrl, myWorkerInstance, configuration]);
+
+  const handleValuesChange = useCallback((configuration: Configuration) => {   
+    console.log("Update configuration"); 
+    setConfiguration(configuration);
+  }, []);
 
   useEffect(() => {
     if (myWorkerInstance) {
@@ -171,7 +192,8 @@ function App() {
         idBest={simulation.best.id} 
         elapsedTimeForGeneration={simulation.elapsedTime}
         notImprovingSince={simulation.notImprovingSince}/>
-    </div>        
+      <GAConfiguration className="six" onValuesChange={handleValuesChange}/>
+    </div>            
   );
 }
 

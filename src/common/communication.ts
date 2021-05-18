@@ -1,12 +1,13 @@
-import { Individual } from "./ga";
+import { Configuration, Individual } from "./ga";
 
 export interface AGworkerIn {
     isRunning: boolean;
     image: ImageData;
-    populationSize: number;
-    genesSize: number;
-    nbVertices: number;
-    nbColor: number;
+    configuration: Configuration;
+    //populationSize: number;
+    //genesSize: number;
+    //nbVertices: number;
+    //nbColor: number;
     population: Individual[];
     generation: number;
     best: Individual;
