@@ -78,7 +78,6 @@ function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean
         const canvas = new OffscreenCanvas(image.width, image.height);
         const diffContext = canvas.getContext('2d');
         let nbPixelsDiff = 0;
-        let diff: ImageData | undefined = undefined;
         if (diffContext) {
             diff = diffContext.createImageData(image.width, image.height);
             nbPixelsDiff = pixelmatch(image.data, generatedImage.data, diff.data, image.width, image.height, {threshold: 0.1});
@@ -183,7 +182,6 @@ self.addEventListener("message", e => {
 
     const config = msg.configuration;
     const nbColors = config.enableTransparency ? 4 : 3;
-    const genesSize = (config.nbVertex * 2 + nbColors) * config.nbPolygons;
     
     let previousPop = msg.population;
     let previousBest = msg.best;
@@ -217,7 +215,7 @@ self.addEventListener("message", e => {
         let nextPop: Individual[] = [];        
         let start = (new Date()).getTime();
         if (previousPop.length === 0) {
-            nextPop = generatePopulation(config.population, genesSize, config.nbVertex, nbColors, msg.renderingWidth, msg.renderingHeight);
+            nextPop = generatePopulation(config.population, config.nbPolygons, config.nbVertex, nbColors, msg.renderingWidth, msg.renderingHeight);
             nextPop = evaluatePopulation(
                 nextPop, 
                 config.enableSsim,
@@ -273,7 +271,7 @@ self.addEventListener("message", e => {
                 }
                 else if (rand < 0.2) {
                     // Create a new individual
-                    const ind = createIndividual(genesSize, config.nbVertex, nbColors, msg.renderingWidth, msg.renderingHeight);
+                    const ind = createIndividual(config.nbPolygons, config.nbVertex, nbColors, msg.renderingWidth, msg.renderingHeight);
                     const result = evaluate(
                         ind, 
                         config.enableSsim,

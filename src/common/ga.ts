@@ -55,9 +55,9 @@ export function createEmptyIndividual(): Individual {
     return ind;
 }
 
-export function createIndividual(genesSize: number, nbVertices: number, nbColor: number, width: number, height: number): Individual {
+export function createIndividual(nbPolygons: number, nbVertices: number, nbColor: number, width: number, height: number): Individual {
     const genes: number[] = [];
-    for (let i = 0; i < genesSize; i++) {
+    for (let i = 0; i < nbPolygons; i++) {
         
         const x = randomNumberInRange(0, width, true);
         const y = randomNumberInRange(0, height, true);

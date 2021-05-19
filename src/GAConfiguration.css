@@ -1,0 +1,10 @@
+label {
+    display: inline-block;
+}
+
+input[type="checkbox"] {
+    vertical-align: middle;
+    float: right;
+    text-align: center;
+    width: 50px;
+}

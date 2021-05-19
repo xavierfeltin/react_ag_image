@@ -64,7 +64,6 @@ function App() {
   const [isStopped, setStop] = useState<boolean>(true);
 
   const handleSelectUrl = useCallback((url :string) => {
-    console.log("Start with " + JSON.stringify(configuration));
     setStop(false);
     setUrl(url);
   }, []);
@@ -97,7 +96,6 @@ function App() {
   }, [myWorkerInstance]);
 
   const handleUrlImageDrawn = useCallback((img: CanvasImageSource, renderedWidth: number, renderedHeight: number) => {
-    console.log("[handleUrlImageDrawn] image loaded start worker!");
     setWorker(new MyWorker());
     
     const imageWidth: number = img.width as number;
@@ -132,7 +130,6 @@ function App() {
   }, []);
 
   const handleLoadingImageError = useCallback(() => {
-    console.log("[handleLoadingImageError] error when loading the image");
     setStop(true);  
   }, []);
 
@@ -155,9 +152,8 @@ function App() {
     }
   }, [simulation, imageFromUrl, myWorkerInstance, configuration]);
 
-  const handleValuesChange = useCallback((configuration: Configuration) => {   
-    console.log("Update configuration"); 
-    setConfiguration(configuration);
+  const handleValuesChange = useCallback((config: Configuration) => {   
+    setConfiguration(config);
   }, []);
 
   useEffect(() => {
@@ -172,27 +168,49 @@ function App() {
   return (
     <div className="wrapper">       
       <InputImageUrl className="one" start={handleSelectUrl} stop={handleStop} isStopped={isStopped}/>
-      { imageUrl &&
+      { imageUrl && !isStopped &&
         <RendererFromUrl className="two" classNameOnError="twoExpanded" name={"original-image"} onImageDrawn={handleUrlImageDrawn} onLoadingError={handleLoadingImageError} limit={limitImageSize} url={imageUrl}/>
       }
-      { imageFromUrl.image && 
+      { imageFromUrl.image && !isStopped &&
         <RendererFromDrawing className="three" onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} drawingSteps={simulation.best.phenotype}/>        
       }
-      { imageFromUrl && simulation.best.diff && 
+      { simulation.best.diff && !isStopped &&
         <RendererFromData className="four" name={"diff-image"} width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} data={simulation.best.diff}/>        
-      }  
-      { imageFromUrl.image && simulation.best.diff && 
-        <RendererFromData className="four" name={"diff-image"} width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} data={imageFromUrl.image}/>        
-      }          
-      <GAInformation className="five" 
-        generation={simulation.generation} 
-        fitness={simulation.best.fitness} 
-        ssim={simulation.best.ssim}
-        pixelDiff={simulation.best.pixelDiff}
-        idBest={simulation.best.id} 
-        elapsedTimeForGeneration={simulation.elapsedTime}
-        notImprovingSince={simulation.notImprovingSince}/>
-      <GAConfiguration className="six" onValuesChange={handleValuesChange}/>
+      }
+      { !isStopped &&
+        <GAInformation 
+          className="five" 
+          generation={simulation.generation} 
+          fitness={simulation.best.fitness} 
+          ssim={simulation.best.ssim}
+          pixelDiff={simulation.best.pixelDiff}
+          idBest={simulation.best.id} 
+          elapsedTimeForGeneration={simulation.elapsedTime}
+          notImprovingSince={simulation.notImprovingSince}
+        />
+      }            
+      {
+        isStopped &&
+        <GAConfiguration
+          population={50}
+          selectCutoff={0.2}
+          keepPreviousRatio={0.1}
+          newIndividualRatio={0.1}
+          crossoverParentRatio={0.6}
+          mutationRate={0.1}
+          vertexMovement={5}
+          colorModificationRate={0.1}
+          enableSsim={true}
+          enablePixelDiff={true}
+          ratioSsim={3}
+          ratioPixelDiff={1}
+          enableTransparency={true}
+          nbVertex={3}
+          nbPolygons={125}
+          className="five" 
+          onValuesChange={handleValuesChange}
+        />
+      }      
     </div>            
   );
 }
