@@ -59,6 +59,7 @@ function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean
         mssim: 0
     };
 
+    let overloadRatioSsim = ratioSsim;
     if (enableSsim) {
         const options: Options = {
             rgb2grayVersion: 'original',
@@ -71,9 +72,13 @@ function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean
         };
         ssimResult = ssim(image, generatedImage, options);
     }
+    else {
+        overloadRatioSsim= 0;
+    }
 
     let diff: ImageData | undefined = undefined;
     let ratioMatchingPixel= 0;
+    let overloadRatioPixelDiff = ratioPixelDiff;
     if (enablePixelDiff){
         const canvas = new OffscreenCanvas(image.width, image.height);
         const diffContext = canvas.getContext('2d');
@@ -85,9 +90,12 @@ function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean
         
         ratioMatchingPixel = ((image.width * image.height) - nbPixelsDiff) / (image.width * image.height);
     }
+    else {
+        overloadRatioPixelDiff = 0;
+    }
     
     const result: Result = {
-        fitness: (ssimResult.mssim * ratioSsim + ratioMatchingPixel * ratioPixelDiff) / (ratioSsim + ratioPixelDiff),
+        fitness: (ssimResult.mssim * overloadRatioSsim + ratioMatchingPixel * overloadRatioPixelDiff) / (overloadRatioSsim + overloadRatioPixelDiff),
         ssim: ssimResult.mssim,
         pixelDiff: ratioMatchingPixel,
         diff: diff

@@ -55,6 +55,7 @@ function App() {
   const [imageUrl, setUrl] = useState<string>("");
   //const [imageUrl, setUrl] = useState<string>("https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif");
   //const [imageUrl, setUrl] = useState<string>("https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/390px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg");
+  //https://i.picsum.photos/id/823/420/560.jpg?hmac=H6lJE4fRi96MxgWYyd3_79WbmObu-jJj7Zo40p5I-nU
   //const [imageFromUrl, setImage] = useState<ImageData|null>(null);
   
   const [imageFromUrl, setImage] = useState<Image>({
@@ -63,9 +64,8 @@ function App() {
   const [myWorkerInstance, setWorker] = useState<Worker | null>(null); 
   const [isStopped, setStop] = useState<boolean>(true);
 
-  const handleSelectUrl = useCallback((url :string) => {
-    setStop(false);
-    setUrl(url);
+  const handleStart = useCallback((url :string) => {
+    setUrl(url);    
   }, []);
 
   const handleStop = useCallback(() => {
@@ -96,8 +96,6 @@ function App() {
   }, [myWorkerInstance]);
 
   const handleUrlImageDrawn = useCallback((img: CanvasImageSource, renderedWidth: number, renderedHeight: number) => {
-    setWorker(new MyWorker());
-    
     const imageWidth: number = img.width as number;
     const imageHeight: number = img.height as number;
 
@@ -123,6 +121,9 @@ function App() {
         ratioOffscreenHeight: ratioH,
         limitOffscreen: 64
       });  
+
+      setWorker(new MyWorker());
+      setStop(false);      
     } 
     else {
       console.error("ctx from url image for resizing could not be created");
@@ -136,6 +137,7 @@ function App() {
   const handleGeneratedImageDrawn = useCallback((img: ImageData) => {    
     if (myWorkerInstance && imageFromUrl.image)
     {
+      console.log("[handleGeneratedImageDrawn] sent msg: " + simulation.best.id + " - " + simulation.best.fitness);
       const message: AGworkerIn = {
         isRunning: simulation.isRunning,
         image: imageFromUrl.image, 
@@ -167,8 +169,8 @@ function App() {
 
   return (
     <div className="wrapper">       
-      <InputImageUrl className="one" start={handleSelectUrl} stop={handleStop} isStopped={isStopped}/>
-      { imageUrl && !isStopped &&
+      <InputImageUrl className="one" start={handleStart} stop={handleStop} isStopped={isStopped}/>
+      { imageUrl &&
         <RendererFromUrl className="two" classNameOnError="twoExpanded" name={"original-image"} onImageDrawn={handleUrlImageDrawn} onLoadingError={handleLoadingImageError} limit={limitImageSize} url={imageUrl}/>
       }
       { imageFromUrl.image && !isStopped &&
