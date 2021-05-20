@@ -15,6 +15,20 @@ import { Configuration } from './common/ga';
 function App() {
 
   const limitImageSize = 256;
+  const sampleLnks: {name: string, link: string}[] = [
+    { 
+      name: "Einstein",
+      link: "https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"
+    },
+    { 
+      name: "Joconde",
+      link: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/390px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg"
+    },
+    { 
+      name: "Photographe",
+      link: "https://i.picsum.photos/id/823/420/560.jpg?hmac=H6lJE4fRi96MxgWYyd3_79WbmObu-jJj7Zo40p5I-nU"
+    }    
+  ];
 
   const [configuration, setConfiguration] = useState<Configuration>({
     population: 0,
@@ -53,11 +67,6 @@ function App() {
   });
 
   const [imageUrl, setUrl] = useState<string>("");
-  //const [imageUrl, setUrl] = useState<string>("https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif");
-  //const [imageUrl, setUrl] = useState<string>("https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/390px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg");
-  //https://i.picsum.photos/id/823/420/560.jpg?hmac=H6lJE4fRi96MxgWYyd3_79WbmObu-jJj7Zo40p5I-nU
-  //const [imageFromUrl, setImage] = useState<ImageData|null>(null);
-  
   const [imageFromUrl, setImage] = useState<Image>({
     image: null, renderedWidth: 0, renderedHeight: 0, ratioOffscreenWidth: 0, ratioOffscreenHeight: 0, offscreenWidth: 0, offscreenHeight: 0, limitOffscreen: 0});
 
@@ -137,7 +146,6 @@ function App() {
   const handleGeneratedImageDrawn = useCallback((img: ImageData) => {    
     if (myWorkerInstance && imageFromUrl.image)
     {
-      console.log("[handleGeneratedImageDrawn] sent msg: " + simulation.best.id + " - " + simulation.best.fitness);
       const message: AGworkerIn = {
         isRunning: simulation.isRunning,
         image: imageFromUrl.image, 
@@ -169,7 +177,7 @@ function App() {
 
   return (
     <div className="wrapper">       
-      <InputImageUrl className="one" start={handleStart} stop={handleStop} isStopped={isStopped}/>
+      <InputImageUrl className="one" links={sampleLnks} start={handleStart} stop={handleStop} isStopped={isStopped}/>
       { imageUrl &&
         <RendererFromUrl className="two" classNameOnError="twoExpanded" name={"original-image"} onImageDrawn={handleUrlImageDrawn} onLoadingError={handleLoadingImageError} limit={limitImageSize} url={imageUrl}/>
       }
@@ -198,9 +206,9 @@ function App() {
           selectCutoff={0.2}
           keepPreviousRatio={0.1}
           newIndividualRatio={0.1}
-          crossoverParentRatio={0.6}
+          crossoverParentRatio={0.5}
           mutationRate={0.1}
-          vertexMovement={5}
+          vertexMovement={0.1}
           colorModificationRate={0.1}
           enableSsim={true}
           enablePixelDiff={true}

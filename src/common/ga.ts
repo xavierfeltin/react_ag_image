@@ -87,11 +87,11 @@ export function createIndividual(nbPolygons: number, nbVertices: number, nbColor
     return ind;
 }
 
-export function generatePopulation(popSize: number, genesSize: number, nbVertices: number, nbColor: number, width: number, height: number): Individual[]
+export function generatePopulation(popSize: number, nbPolygons: number, nbVertices: number, nbColor: number, width: number, height: number): Individual[]
 {
     let population = [];
     for (let i = 0; i < popSize; i++) {
-        const ind = createIndividual( genesSize, nbVertices, nbColor, width, height);
+        const ind = createIndividual( nbPolygons, nbVertices, nbColor, width, height);
         population.push(ind);
     }
     return population;
@@ -252,7 +252,7 @@ export function crossOver(a: Individual, b: Individual, parentRatio: number, nbV
         phenotype: []
     };
 
-    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? parentRatio : 1 - parentRatio);
+    let probaToPickFromA = (a.fitness > b.fitness) ? parentRatio : 1 - parentRatio;
    
     let i = 0;
     while (i < a.genes.length) {
@@ -279,7 +279,7 @@ export function crossOver(a: Individual, b: Individual, parentRatio: number, nbV
         phenotype: []
     };
 
-    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? parentRatio : 1 - parentRatio);
+   let probaToPickFromA = (a.fitness > b.fitness) ? parentRatio : 1 - parentRatio;
     
     let i = 0;
     while (i < a.genes.length) {        
@@ -331,7 +331,7 @@ export function crossOver(a: Individual, b: Individual, parentRatio: number, nbV
         phenotype: []
     };
 
-    let probaToPickFromA = (a.fitness > b.fitness) ? 0.6 : ((a.fitness === b.fitness)  ? parentRatio : 1 - parentRatio);
+    let probaToPickFromA = (a.fitness > b.fitness) ? parentRatio : 1 - parentRatio;
 
     let i = 0;
     while (i < a.genes.length) {        

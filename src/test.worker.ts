@@ -68,7 +68,7 @@ function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean
             k2: 0.03, //The second stability constant
             bitDepth: 8, //The number of bits used to encode each pixel
             downsample: 'original', //false / 'original' / 'fast'
-            ssim: 'weber'
+            ssim: 'original'
         };
         ssimResult = ssim(image, generatedImage, options);
     }
@@ -122,57 +122,48 @@ function mutate(ind: Individual, mutationRate: number, vertexMovement: number, c
     while (i < ind.genes.length) {
         if (Math.random() < probaToMutate) {     
             const relativeIndex = i % polygonSize;   
-            const isStartingOfAPolygon = relativeIndex === 0;
+           
+            // Modifiy polygon shape and color                  
+            const isVertexCoordinates = relativeIndex < (nbVertices * 2);               
+            const isStartingVertex = (relativeIndex % 2) === 0 && isVertexCoordinates;
+            const isColorInformation = relativeIndex >= (nbVertices * 2);
 
-            // debugger; 
+            if (isStartingVertex) {
+                //Modify the vertex
+                let v: Vertex = {
+                    x: ind.genes[i],
+                    y: ind.genes[i + 1]
+                };
 
-            if (Math.random() < 0.1 && isStartingOfAPolygon) {
-                 // move polygon at the end for rendering
-                swapBuffer = swapBuffer.concat(ind.genes.slice(i, i + polygonSize));
-                i += polygonSize;
+                let maxDistance = Math.max(width, height) * vertexMovement;
+                let range = randomNumberInRange(-maxDistance, maxDistance, false);
+                if (range > -1 && range <= 0) { range = -1}
+                if (range < 1 && range >= 0) { range = 1}
+                v = moveVertex(v, range, width, height);
+                mutant.genes.push(v.x);
+                mutant.genes.push(v.y);
+                i += 2;
             }
-            else {
-                // Modifiy polygon shape and color                  
-                const isVertexCoordinates = relativeIndex < (nbVertices * 2);               
-                const isStartingVertex = (relativeIndex % 2) === 0 && isVertexCoordinates;
-                const isColorInformation = relativeIndex >= (nbVertices * 2);
-
-                if (isStartingVertex) {
-                    //Modify the vertex
-                    let v: Vertex = {
-                        x: ind.genes[i],
-                        y: ind.genes[i + 1]
-                    };
-                                    
-                    let range = randomNumberInRange(-vertexMovement, vertexMovement, false);
-                    if (range > -1 && range <= 0) { range = -1}
-                    if (range < 1 && range >= 0) { range = 1}
-                    v = moveVertex(v, range, width, height);
-                    mutant.genes.push(v.x);
-                    mutant.genes.push(v.y);
-                    i += 2;
-                }
-                else if (isColorInformation) {
-                    // Change color
-                    const range = randomNumberInRange(-colorModificationRate, colorModificationRate, false);
-                    let c = ind.genes[i] + ind.genes[i] * range;
-                    const isAlpha = nbColor === 4 && (relativeIndex === (polygonSize - 1));
-                    if (isAlpha) {
-                        c = Math.max(0, Math.min(c, 1));
-                    }
-                    else {
-                        c = Math.round(c);
-                        c = Math.max(0.2, Math.min(c, 255));
-                    }
-                    mutant.genes.push(c);
-                    i++;
+            else if (isColorInformation) {
+                // Change color
+                const range = randomNumberInRange(-colorModificationRate, colorModificationRate, false);
+                let c = ind.genes[i] + ind.genes[i] * range;
+                const isAlpha = nbColor === 4 && (relativeIndex === (polygonSize - 1));
+                if (isAlpha) {
+                    c = Math.max(0, Math.min(c, 1));
                 }
                 else {
-                    //y coordinate of a vertex do nothing to mutate it
-                    mutant.genes.push(ind.genes[i]);
-                    i++;
+                    c = Math.round(c);
+                    c = Math.max(0.2, Math.min(c, 255));
                 }
-            }         
+                mutant.genes.push(c);
+                i++;
+            }
+            else {
+                //y coordinate of a vertex do nothing to mutate it
+                mutant.genes.push(ind.genes[i]);
+                i++;
+            }
         }
         else {
             mutant.genes.push(ind.genes[i]);
@@ -223,6 +214,7 @@ self.addEventListener("message", e => {
         let nextPop: Individual[] = [];        
         let start = (new Date()).getTime();
         if (previousPop.length === 0) {
+
             nextPop = generatePopulation(config.population, config.nbPolygons, config.nbVertex, nbColors, msg.renderingWidth, msg.renderingHeight);
             nextPop = evaluatePopulation(
                 nextPop, 

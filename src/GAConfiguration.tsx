@@ -73,7 +73,7 @@ export function GAConfiguration({
             <InputRange id="ga-new-individual" name="ga-new-individual" label="Generate new individual" min={0} max={1} defaultVal={values.newIndividualRatio} step={0.1} onChange={v => setValues({...values, newIndividualRatio: v})}/>
             <InputRange id="ga-crossover-parent" name="ga-crossover-parent" label="Cross over main parent ratio" min={0} max={1} defaultVal={values.crossoverParentRatio} step={0.1} onChange={v => setValues({...values, crossoverParentRatio: v})}/>
             <InputRange id="ga-mutation" name="ga-mutation" label="Mutation rate" min={0} max={1} defaultVal={values.mutationRate} step={0.1} onChange={v => setValues({...values, mutationRate: v})}/>
-            <InputRange id="ga-vertex-movement" name="ga-vertex-movement" label="Vertex movement" min={0} max={32} defaultVal={values.vertexMovement} step={1} onChange={v => setValues({...values, vertexMovement: v})}/>
+            <InputRange id="ga-vertex-movement" name="ga-vertex-movement" label="Vertex movement" min={0} max={0.5} defaultVal={values.vertexMovement} step={0.1} onChange={v => setValues({...values, vertexMovement: v})}/>
             <InputRange id="ga-color-modification" name="ga-color-modification" label="Color modification" min={0} max={1} defaultVal={values.colorModificationRate} step={0.1} onChange={v => setValues({...values, colorModificationRate: v})}/>
 
             <h3> Image rendering </h3>
@@ -81,14 +81,17 @@ export function GAConfiguration({
                 <label className="gaconfiguration-one" htmlFor="ga-ssim">SSIM:</label>
                 <input className="gaconfiguration-three" type="checkbox" id="ga-ssim" value="ssim" checked={values.enableSsim} onChange={v =>{setValues({...values, enableSsim: v.target.checked})}}/>
             </div>
-            <InputRange id="ga-ssim-ratio" name="ga-ssim-ratio" label="Ratio" min={0} max={10} defaultVal={values.ratioSsim} step={1} onChange={v => setValues({...values, ratioSsim: v})}/>
-            
             <div>            
                 <label className="gaconfiguration-one" htmlFor="ga-pixeldiff">Pixel differenciation:</label>
                 <input className="gaconfiguration-three" type="checkbox" id="ga-pixeldiff" value="pixeldiff" checked={values.enablePixelDiff} onChange={v => setValues({...values, enablePixelDiff: v.target.checked})}/>
             </div>
-            <InputRange id="ga-pixldiff-ratio" name="ga-pixldiff-ration" label="Ratio" min={0} max={10} defaultVal={values.ratioPixelDiff} step={1} onChange={v => setValues({...values, ratioPixelDiff: v})}/>
-            
+            {values.enableSsim && values.enablePixelDiff &&
+                <div>
+                    <InputRange id="ga-ssim-ratio" name="ga-ssim-ratio" label="Ratio Ssim" min={0} max={10} defaultVal={values.ratioSsim} step={1} onChange={v => setValues({...values, ratioSsim: v})}/>
+                    <InputRange id="ga-pixldiff-ratio" name="ga-pixldiff-ration" label="Ratio Pixel" min={0} max={10} defaultVal={values.ratioPixelDiff} step={1} onChange={v => setValues({...values, ratioPixelDiff: v})}/>            
+                </div>
+            }
+           
             <div>   
                 <label className="gaconfiguration-one" htmlFor="ga-transparency">Transparency:</label>
                 <input className="gaconfiguration-three" type="checkbox" id="ga-transparency" value="transparency" checked={values.enableTransparency} onChange={v => setValues({...values, enableTransparency: v.target.checked})}/>
