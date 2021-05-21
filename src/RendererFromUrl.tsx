@@ -15,41 +15,44 @@ export interface RendererProps {
 export function RendererFromUrl({ name, url, limit, onImageDrawn, onLoadingError, className, classNameOnError }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isErrorOnLoad, setError] = useState<boolean>(false);
+    const [imageUrl, setImageUrl] = useState<string>(""); 
 
-    useEffect(() => {        
-        setError(false);
-        const canvas = canvasRef.current as HTMLCanvasElement;
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
+    useEffect(() => {       
+        if (url !== imageUrl)
+        {
+            setImageUrl(url);
+            setError(false);
+            const canvas = canvasRef.current as HTMLCanvasElement;
+            if (canvas) {
+                const ctx = canvas.getContext('2d');
+            
+                const img = new Image();
+                img.crossOrigin = "Anonymous";  // This enables CORS
+                img.onload = () => {
+                    const { width, height } = getLimitDimensions(img.width, img.height, limit);            
+                    if (width === 0 || height === 0) {
+                        console.error("Fail to load the image");
+                    }
         
-            const img = new Image();
-            img.crossOrigin = "Anonymous";  // This enables CORS
-            img.onload = () => {
-                const { width, height } = getLimitDimensions(img.width, img.height, limit);            
-                if (width === 0 || height === 0) {
-                    console.error("Fail to load the image");
-                }
-    
-                canvas.width = width;
-                canvas.height = height;
-    
-                if (ctx) {
-                    ctx.drawImage(img, 0, 0, width, height);
-                    onImageDrawn?.(img, width, height);
-                }
-                else {
-                    console.error("ctx is null the image can not be loaded");
-                }                        
-            };
-            img.src = url;
-            img.onerror = () => {
-                setError(true);
-                onLoadingError();
-            }    
-        }
-    }, [url, limit, onImageDrawn, onLoadingError]);
-
-
+                    canvas.width = width;
+                    canvas.height = height;
+        
+                    if (ctx) {
+                        ctx.drawImage(img, 0, 0, width, height);
+                        onImageDrawn?.(img, width, height);
+                    }
+                    else {
+                        console.error("ctx is null the image can not be loaded");
+                    }                        
+                };
+                img.src = url;
+                img.onerror = () => {
+                    setError(true);
+                    onLoadingError();
+                }    
+            }
+        }         
+    }, [url, limit, onImageDrawn, onLoadingError, imageUrl]);
 
     return (
         <div>

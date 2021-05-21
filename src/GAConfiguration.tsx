@@ -68,13 +68,13 @@ export function GAConfiguration({
         <div className={className}>
             <h3> Genetic Algorithm </h3>
             <InputRange id="ga-population" name="ga-population" label="Population" min={10} max={300} defaultVal={values.population} step={1} onChange={v => setValues({...values, population: v})}/>
-            <InputRange id="ga-selection-cutoff" name="ga-selection-cutoff" label="Selection cutoff" min={0} max={1} defaultVal={values.selectCutoff} step={0.1} onChange={v => setValues({...values, selectCutoff: v})}/>
-            <InputRange id="ga-keep-previous" name="ga-keep-previous" label="Keep previous individual" min={0} max={1} defaultVal={values.keepPreviousRatio} step={0.1}onChange={v => setValues({...values, keepPreviousRatio: v})}/>
-            <InputRange id="ga-new-individual" name="ga-new-individual" label="Generate new individual" min={0} max={1} defaultVal={values.newIndividualRatio} step={0.1} onChange={v => setValues({...values, newIndividualRatio: v})}/>
-            <InputRange id="ga-crossover-parent" name="ga-crossover-parent" label="Cross over main parent ratio" min={0} max={1} defaultVal={values.crossoverParentRatio} step={0.1} onChange={v => setValues({...values, crossoverParentRatio: v})}/>
-            <InputRange id="ga-mutation" name="ga-mutation" label="Mutation rate" min={0} max={1} defaultVal={values.mutationRate} step={0.1} onChange={v => setValues({...values, mutationRate: v})}/>
-            <InputRange id="ga-vertex-movement" name="ga-vertex-movement" label="Vertex movement" min={0} max={0.5} defaultVal={values.vertexMovement} step={0.1} onChange={v => setValues({...values, vertexMovement: v})}/>
-            <InputRange id="ga-color-modification" name="ga-color-modification" label="Color modification" min={0} max={1} defaultVal={values.colorModificationRate} step={0.1} onChange={v => setValues({...values, colorModificationRate: v})}/>
+            <InputRange id="ga-selection-cutoff" name="ga-selection-cutoff" label="Selection cutoff" min={0} max={1} defaultVal={values.selectCutoff} step={0.05} onChange={v => setValues({...values, selectCutoff: v})}/>
+            <InputRange id="ga-keep-previous" name="ga-keep-previous" label="Keep previous individual" min={0} max={1} defaultVal={values.keepPreviousRatio} step={0.05}onChange={v => setValues({...values, keepPreviousRatio: v})}/>
+            <InputRange id="ga-new-individual" name="ga-new-individual" label="Generate new individual" min={0} max={1} defaultVal={values.newIndividualRatio} step={0.05} onChange={v => setValues({...values, newIndividualRatio: v})}/>
+            <InputRange id="ga-crossover-parent" name="ga-crossover-parent" label="Cross over main parent ratio" min={0} max={1} defaultVal={values.crossoverParentRatio} step={0.05} onChange={v => setValues({...values, crossoverParentRatio: v})}/>
+            <InputRange id="ga-mutation" name="ga-mutation" label="Mutation rate" min={0} max={1} defaultVal={values.mutationRate} step={0.05} onChange={v => setValues({...values, mutationRate: v})}/>
+            <InputRange id="ga-vertex-movement" name="ga-vertex-movement" label="Vertex movement" min={0} max={0.5} defaultVal={values.vertexMovement} step={0.05} onChange={v => setValues({...values, vertexMovement: v})}/>
+            <InputRange id="ga-color-modification" name="ga-color-modification" label="Color modification" min={0} max={1} defaultVal={values.colorModificationRate} step={0.05} onChange={v => setValues({...values, colorModificationRate: v})}/>
 
             <h3> Image rendering </h3>
             <div>

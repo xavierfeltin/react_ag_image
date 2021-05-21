@@ -27,25 +27,29 @@ function App() {
     { 
       name: "Photographe",
       link: "https://i.picsum.photos/id/823/420/560.jpg?hmac=H6lJE4fRi96MxgWYyd3_79WbmObu-jJj7Zo40p5I-nU"
-    }    
+    },
+    { 
+      name: "Random",
+      link: "https://picsum.photos/420/560"
+    }       
   ];
 
   const [configuration, setConfiguration] = useState<Configuration>({
-    population: 0,
-    selectCutoff: 0,
-    keepPreviousRatio: 0,
-    newIndividualRatio: 0,
-    crossoverParentRatio: 0,
-    mutationRate: 0,
-    vertexMovement: 0,
-    colorModificationRate: 0,
+    population: 50,
+    selectCutoff: 0.2,
+    keepPreviousRatio: 0.15,
+    newIndividualRatio: 0.05,
+    crossoverParentRatio: 0.7,
+    mutationRate: 0.2,
+    vertexMovement: 0.1,
+    colorModificationRate: 0.1,
     enableSsim: true,
-    enablePixelDiff: true,
-    ratioSsim: 0,
-    ratioPixelDiff: 0,
+    enablePixelDiff: false,
+    ratioSsim: 1,
+    ratioPixelDiff: 1,
     enableTransparency: true,
-    nbVertex: 0,
-    nbPolygons: 0
+    nbVertex: 3,
+    nbPolygons: 125
   });
 
   const [simulation, setSimulation] = useState<AGworkerOut>({
@@ -66,6 +70,8 @@ function App() {
     notImprovingSince: 0
   });
 
+  const [response, setResponse] = useState<AGworkerOut | undefined>(undefined);
+
   const [imageUrl, setUrl] = useState<string>("");
   const [imageFromUrl, setImage] = useState<Image>({
     image: null, renderedWidth: 0, renderedHeight: 0, ratioOffscreenWidth: 0, ratioOffscreenHeight: 0, offscreenWidth: 0, offscreenHeight: 0, limitOffscreen: 0});
@@ -73,14 +79,61 @@ function App() {
   const [myWorkerInstance, setWorker] = useState<Worker | null>(null); 
   const [isStopped, setStop] = useState<boolean>(true);
 
-  const handleStart = useCallback((url :string) => {
+  const handleResponse = useCallback((e: MessageEvent<any>) => {      
+    const response: AGworkerOut = e.data as AGworkerOut;
+    setResponse(response);             
+  }, []);
+
+  const handleStart = useCallback((url :string) => {    
+    const newWorker = new MyWorker();    
+    setWorker(newWorker);
+
+    setStop(false);      
     setUrl(url);    
   }, []);
 
-  const handleStop = useCallback(() => {
-    setStop(true); 
-    setUrl("");
+  useEffect(() => {
+    if (myWorkerInstance) {
+      console.log("Add listener to worker");
+      myWorkerInstance.addEventListener('message', handleResponse);
+    }    
+  }, [myWorkerInstance, handleResponse]);
 
+  useEffect(() => {
+
+    if (!myWorkerInstance || !imageFromUrl.image || !response || isStopped) {
+      return;
+    }
+
+    //if ((simulation.generation + 1) === response.generation) {
+      setSimulation(response);
+      //console.log(`Set response of generation ${response.generation} to simulation of generation ${simulation.generation}`);
+      console.log(`Set response of generation ${response.generation}`);
+
+      //Send next message
+      const message: AGworkerIn = {
+        isRunning: response.isRunning,
+        image: imageFromUrl.image, 
+        configuration: configuration,
+        notImprovingSince: response.notImprovingSince,
+        best: response.best,
+        population: response.population,
+        generation: response.generation,
+        renderingHeight: imageFromUrl.offscreenHeight,
+        renderingWidth: imageFromUrl.offscreenWidth
+      };
+
+      console.log("post message for generation " + response.generation);
+      myWorkerInstance.postMessage(message);
+    /*
+    }
+    else {
+      console.warn(`Try to set response of generation ${response.generation} to simulation of generation ${simulation.generation}`);
+    } 
+    */       
+  }, [myWorkerInstance, response, imageFromUrl, configuration, isStopped])
+
+  const handleStop = useCallback(() => {
     // Reset simulation
     if (myWorkerInstance) {
       myWorkerInstance.terminate();
@@ -101,6 +154,9 @@ function App() {
         elapsedTime: 0,
         notImprovingSince: 0
       });
+      setUrl("");  
+      setStop(true); 
+      setResponse(undefined);        
     }    
   }, [myWorkerInstance]);
 
@@ -131,19 +187,36 @@ function App() {
         limitOffscreen: 64
       });  
 
-      setWorker(new MyWorker());
-      setStop(false);      
+      if (myWorkerInstance && image) {
+        //Send next message
+        const message: AGworkerIn = {
+          isRunning: simulation.isRunning,
+          image: image, 
+          configuration: configuration,
+          notImprovingSince: simulation.notImprovingSince,
+          best: simulation.best,
+          population: simulation.population,
+          generation: simulation.generation,
+          renderingHeight: simDimensions.width,
+          renderingWidth: simDimensions.height
+        };
+
+        console.log("post message for first generation");
+        myWorkerInstance.postMessage(message);
+      }     
+
     } 
     else {
       console.error("ctx from url image for resizing could not be created");
     }   
-  }, []);
+  }, [simulation, myWorkerInstance, configuration]);
 
   const handleLoadingImageError = useCallback(() => {
     setStop(true);  
   }, []);
 
   const handleGeneratedImageDrawn = useCallback((img: ImageData) => {    
+    /*
     if (myWorkerInstance && imageFromUrl.image)
     {
       const message: AGworkerIn = {
@@ -160,20 +233,34 @@ function App() {
 
       myWorkerInstance.postMessage(message);
     }
-  }, [simulation, imageFromUrl, myWorkerInstance, configuration]);
+    */
+  }, [/*simulation, imageFromUrl, myWorkerInstance, configuration*/]);
 
   const handleValuesChange = useCallback((config: Configuration) => {   
     setConfiguration(config);
   }, []);
 
+  /*
   useEffect(() => {
-    if (myWorkerInstance) {
-      myWorkerInstance.addEventListener('message', function(e) {      
-        const response: AGworkerOut = e.data as AGworkerOut;
-        setSimulation(response);      
-      });
-    }    
-  }, [myWorkerInstance]);
+    if (myWorkerInstance && imageFromUrl.image && !isStopped)
+    {
+      const message: AGworkerIn = {
+        isRunning: simulation.isRunning,
+        image: imageFromUrl.image, 
+        configuration: configuration,
+        notImprovingSince: simulation.notImprovingSince,
+        best: simulation.best,
+        population: simulation.population,
+        generation: simulation.generation,
+        renderingHeight: imageFromUrl.offscreenHeight,
+        renderingWidth: imageFromUrl.offscreenWidth
+      };
+
+      console.log("post message for generation " + simulation.generation);
+      myWorkerInstance.postMessage(message);
+    }
+  }, [myWorkerInstance, imageFromUrl, simulation, configuration, isStopped]);
+  */
 
   return (
     <div className="wrapper">       
@@ -202,21 +289,21 @@ function App() {
       {
         isStopped &&
         <GAConfiguration
-          population={50}
-          selectCutoff={0.2}
-          keepPreviousRatio={0.1}
-          newIndividualRatio={0.1}
-          crossoverParentRatio={0.5}
-          mutationRate={0.1}
-          vertexMovement={0.1}
-          colorModificationRate={0.1}
-          enableSsim={true}
-          enablePixelDiff={true}
-          ratioSsim={3}
-          ratioPixelDiff={1}
-          enableTransparency={true}
-          nbVertex={3}
-          nbPolygons={125}
+          population={configuration.population}
+          selectCutoff={configuration.selectCutoff}
+          keepPreviousRatio={configuration.keepPreviousRatio}
+          newIndividualRatio={configuration.newIndividualRatio}
+          crossoverParentRatio={configuration.crossoverParentRatio}
+          mutationRate={configuration.mutationRate}
+          vertexMovement={configuration.vertexMovement}
+          colorModificationRate={configuration.colorModificationRate}
+          enableSsim={configuration.enableSsim}
+          enablePixelDiff={configuration.enablePixelDiff}
+          ratioSsim={configuration.ratioSsim}
+          ratioPixelDiff={configuration.ratioPixelDiff}
+          enableTransparency={configuration.enableTransparency}
+          nbVertex={configuration.nbVertex}
+          nbPolygons={configuration.nbPolygons}
           className="five" 
           onValuesChange={handleValuesChange}
         />

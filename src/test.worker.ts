@@ -68,7 +68,7 @@ function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean
             k2: 0.03, //The second stability constant
             bitDepth: 8, //The number of bits used to encode each pixel
             downsample: 'original', //false / 'original' / 'fast'
-            ssim: 'original'
+            ssim: 'weber'
         };
         ssimResult = ssim(image, generatedImage, options);
     }
@@ -213,6 +213,7 @@ self.addEventListener("message", e => {
 
         let nextPop: Individual[] = [];        
         let start = (new Date()).getTime();
+
         if (previousPop.length === 0) {
 
             nextPop = generatePopulation(config.population, config.nbPolygons, config.nbVertex, nbColors, msg.renderingWidth, msg.renderingHeight);
