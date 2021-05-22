@@ -292,11 +292,19 @@ self.addEventListener("message", e => {
                 }
                 else {
                     // Create a child
-                    // const parentA = pickParent(previousPop);
-                    // const parentB = pickParent(previousPop);
-                    const parentA = pickParentFromTournament(tournamentPool, 3);
-                    const parentB = pickParentFromTournament(tournamentPool, 3);                    
-                    let child = crossOver(parentA, parentB, config.crossoverParentRatio, config.nbVertex, nbColors);
+                    let parentA;
+                    let parentB;
+                    
+                    if (config.parentSelectionStrategy === "tournament") {
+                        parentA = pickParentFromTournament(tournamentPool, config.tournamentSize);
+                        parentB = pickParentFromTournament(tournamentPool, config.tournamentSize);
+                    }
+                    else {
+                        parentA = pickParent(previousPop);
+                        parentB = pickParent(previousPop);    
+                    }
+                    
+                    let child = crossOver(parentA, parentB, config.crossoverStrategy, config.crossoverParentRatio, config.nbVertex, nbColors);
                     child = mutate(
                         child, 
                         config.mutationRate, 

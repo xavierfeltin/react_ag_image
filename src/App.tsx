@@ -36,11 +36,14 @@ function App() {
 
   const [configuration, setConfiguration] = useState<Configuration>({
     population: 50,
+    parentSelectionStrategy: "tournament",
     selectCutoff: 0.2,
+    tournamentSize: 3,
     keepPreviousRatio: 0.15,
     newIndividualRatio: 0.05,
     crossoverParentRatio: 0.7,
     mutationRate: 0.2,
+    crossoverStrategy: "polygon",
     vertexMovement: 0.1,
     colorModificationRate: 0.1,
     enableSsim: true,
@@ -107,8 +110,7 @@ function App() {
 
     //if ((simulation.generation + 1) === response.generation) {
       setSimulation(response);
-      //console.log(`Set response of generation ${response.generation} to simulation of generation ${simulation.generation}`);
-      console.log(`Set response of generation ${response.generation}`);
+      //console.log(`Set response of generation ${response.generation}`);
 
       //Send next message
       const message: AGworkerIn = {
@@ -123,7 +125,6 @@ function App() {
         renderingWidth: imageFromUrl.offscreenWidth
       };
 
-      console.log("post message for generation " + response.generation);
       myWorkerInstance.postMessage(message);
     /*
     }
@@ -215,52 +216,9 @@ function App() {
     setStop(true);  
   }, []);
 
-  const handleGeneratedImageDrawn = useCallback((img: ImageData) => {    
-    /*
-    if (myWorkerInstance && imageFromUrl.image)
-    {
-      const message: AGworkerIn = {
-        isRunning: simulation.isRunning,
-        image: imageFromUrl.image, 
-        configuration: configuration,
-        notImprovingSince: simulation.notImprovingSince,
-        best: simulation.best,
-        population: simulation.population,
-        generation: simulation.generation,
-        renderingHeight: imageFromUrl.offscreenHeight,
-        renderingWidth: imageFromUrl.offscreenWidth
-      };
-
-      myWorkerInstance.postMessage(message);
-    }
-    */
-  }, [/*simulation, imageFromUrl, myWorkerInstance, configuration*/]);
-
   const handleValuesChange = useCallback((config: Configuration) => {   
     setConfiguration(config);
   }, []);
-
-  /*
-  useEffect(() => {
-    if (myWorkerInstance && imageFromUrl.image && !isStopped)
-    {
-      const message: AGworkerIn = {
-        isRunning: simulation.isRunning,
-        image: imageFromUrl.image, 
-        configuration: configuration,
-        notImprovingSince: simulation.notImprovingSince,
-        best: simulation.best,
-        population: simulation.population,
-        generation: simulation.generation,
-        renderingHeight: imageFromUrl.offscreenHeight,
-        renderingWidth: imageFromUrl.offscreenWidth
-      };
-
-      console.log("post message for generation " + simulation.generation);
-      myWorkerInstance.postMessage(message);
-    }
-  }, [myWorkerInstance, imageFromUrl, simulation, configuration, isStopped]);
-  */
 
   return (
     <div className="wrapper">       
@@ -269,7 +227,7 @@ function App() {
         <RendererFromUrl className="two" classNameOnError="twoExpanded" name={"original-image"} onImageDrawn={handleUrlImageDrawn} onLoadingError={handleLoadingImageError} limit={limitImageSize} url={imageUrl}/>
       }
       { imageFromUrl.image && !isStopped &&
-        <RendererFromDrawing className="three" onImageDrawn={handleGeneratedImageDrawn} name={"generated-image"} width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} drawingSteps={simulation.best.phenotype}/>        
+        <RendererFromDrawing className="three" name={"generated-image"} width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} drawingSteps={simulation.best.phenotype}/>        
       }
       { simulation.best.diff && !isStopped &&
         <RendererFromData className="four" name={"diff-image"} width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} data={simulation.best.diff}/>        
@@ -290,11 +248,14 @@ function App() {
         isStopped &&
         <GAConfiguration
           population={configuration.population}
+          parentSelectionStrategy={configuration.parentSelectionStrategy}
           selectCutoff={configuration.selectCutoff}
+          tournamentSize={configuration.tournamentSize}
           keepPreviousRatio={configuration.keepPreviousRatio}
           newIndividualRatio={configuration.newIndividualRatio}
           crossoverParentRatio={configuration.crossoverParentRatio}
           mutationRate={configuration.mutationRate}
+          crossoverStrategy={configuration.crossoverStrategy}
           vertexMovement={configuration.vertexMovement}
           colorModificationRate={configuration.colorModificationRate}
           enableSsim={configuration.enableSsim}

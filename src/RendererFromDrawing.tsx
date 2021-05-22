@@ -9,7 +9,6 @@ export interface RendererProps {
     ratioW: number;
     ratioH: number;
     drawingSteps: Polygon[];
-    onImageDrawn: (img: ImageData) => void;
     className: string;
 };
 
@@ -24,7 +23,7 @@ function draw(ctx: Context, width: number, height: number, ratioW: number, ratio
     })
 }
 
-export function RendererFromDrawing({ name, width, height, ratioW, ratioH, drawingSteps, onImageDrawn, className }: RendererProps) {
+export function RendererFromDrawing({ name, width, height, ratioW, ratioH, drawingSteps, className }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -39,14 +38,12 @@ export function RendererFromDrawing({ name, width, height, ratioW, ratioH, drawi
         canvas.height = height;
 
         if (ctx) {            
-            draw(ctx, width, height, ratioW, ratioH, drawingSteps);            
-            const image = ctx.getImageData(0, 0, width, height);
-            onImageDrawn?.(image);
+            draw(ctx, width, height, ratioW, ratioH, drawingSteps);
         }
         else {
             console.error("ctx is null the drawing can not be done");
         }       
-    }, [width, height, ratioW, ratioH, drawingSteps, onImageDrawn]);
+    }, [width, height, ratioW, ratioH, drawingSteps]);
 
     return (
         <div>

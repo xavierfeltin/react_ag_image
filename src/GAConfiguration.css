@@ -8,3 +8,16 @@ input[type="checkbox"] {
     text-align: center;
     width: 50px;
 }
+
+.ga-strategy-div {
+    display: flex;
+}
+
+.ga-strategy-label {
+    float: left;
+    text-align: center;
+}
+
+input[type="radio"] {
+    width: 100px;
+}

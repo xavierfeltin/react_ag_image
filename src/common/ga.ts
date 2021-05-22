@@ -20,11 +20,14 @@ export interface Result {
 
 export interface Configuration {
     population: number;
+    parentSelectionStrategy: string;
     selectCutoff: number;
+    tournamentSize: number;
     keepPreviousRatio: number;
     newIndividualRatio: number;
     crossoverParentRatio: number;
     mutationRate: number;
+    crossoverStrategy: string;
     vertexMovement: number;
     colorModificationRate: number;
     enableSsim: boolean;
@@ -239,8 +242,21 @@ function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: nu
 }
 */
 
+export function crossOver(a: Individual, b: Individual, strategy: string, parentRatio: number, nbVertices: number, nbColor: number): Individual {
+    switch(strategy) {
+        case "polygon":
+            return crossOverPolygon(a, b, parentRatio, nbVertices, nbColor);
+        case "vertex":
+            return crossOverVertex(a, b, parentRatio, nbVertices, nbColor);
+        case "data":
+            return crossOverData(a, b, parentRatio, nbVertices, nbColor);
+        default:
+            return a;
+    }
+}
+
 // Crossover on polygon granularity
-export function crossOver(a: Individual, b: Individual, parentRatio: number, nbVertices: number, nbColor: number): Individual {
+export function crossOverPolygon(a: Individual, b: Individual, parentRatio: number, nbVertices: number, nbColor: number): Individual {
     const child: Individual = {
         genes: [],
         fitness: 0,
@@ -265,9 +281,8 @@ export function crossOver(a: Individual, b: Individual, parentRatio: number, nbV
     return child;
 }
 
-/*
 // Crossover on vertex granularity
-export function crossOver(a: Individual, b: Individual, parentRatio: number, nbVertices: number, nbColor: number): Individual {
+export function crossOverVertex(a: Individual, b: Individual, parentRatio: number, nbVertices: number, nbColor: number): Individual {
     const child: Individual = {
         genes: [],
         fitness: 0,
@@ -315,11 +330,9 @@ export function crossOver(a: Individual, b: Individual, parentRatio: number, nbV
 
     return child;
 }
-*/
 
-/*
 // Granularity of each gene
-export function crossOver(a: Individual, b: Individual, parentRatio: number, nbVertices: number, nbColor: number): Individual {
+export function crossOverData(a: Individual, b: Individual, parentRatio: number, nbVertices: number, nbColor: number): Individual {
     const child: Individual = {
         genes: [],
         fitness: 0,
@@ -342,4 +355,3 @@ export function crossOver(a: Individual, b: Individual, parentRatio: number, nbV
 
     return child;
 }
-*/
