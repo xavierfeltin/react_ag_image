@@ -115,6 +115,10 @@ export function GAConfiguration({
                     <label className="ga-strategy-label" htmlFor="strategy-data">Data <br/>
                         <input type="radio" id="strategy-data" name="strategy" value="data" checked={values.crossoverStrategy === "data"} onChange={v =>{setValues({...values, crossoverStrategy: v.target.value})}}/>
                     </label>
+
+                    <label className="ga-strategy-label" htmlFor="strategy-singlePoint">Single point <br/>
+                        <input type="radio" id="strategy-singlePoint" name="strategy" value="singlePoint" checked={values.crossoverStrategy === "singlePoint"} onChange={v =>{setValues({...values, crossoverStrategy: v.target.value})}}/>
+                    </label>
                 </div>
             </div>
             <InputRange id="ga-mutation" name="ga-mutation" label="Mutation rate" min={0} max={1} defaultVal={values.mutationRate} step={0.05} onChange={v => setValues({...values, mutationRate: v})}/>

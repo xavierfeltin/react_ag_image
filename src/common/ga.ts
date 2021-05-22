@@ -37,9 +37,6 @@ export interface Configuration {
     enableTransparency: boolean;
     nbVertex: number;
     nbPolygons: number;
-    // Maybe to add later in configuration
-    //selectParentMode //tournament / fortune wheel
-    //crossOVeMode //by polygone / vertex / coordinate
 }
 
 
@@ -60,14 +57,16 @@ export function createEmptyIndividual(): Individual {
 
 export function createIndividual(nbPolygons: number, nbVertices: number, nbColor: number, width: number, height: number): Individual {
     const genes: number[] = [];
-    for (let i = 0; i < nbPolygons; i++) {
-        
+    const rangeW = width / 2;
+    const rangeH = height / 2;
+
+    for (let i = 0; i < nbPolygons; i++) {    
         const x = randomNumberInRange(0, width, true);
         const y = randomNumberInRange(0, height, true);
 
-        for (let j = 0; j < nbVertices; j++) {
-            genes.push(x + randomNumberInRange(0, width / 2, true));
-            genes.push(y + randomNumberInRange(0, height / 2, true));
+        for (let j = 0; j < nbVertices; j++) {            
+            genes.push(x + randomNumberInRange(-rangeW, rangeW, true));
+            genes.push(y + randomNumberInRange(-rangeH, rangeH, true));
         }
 
         for (let j = 0; j < nbColor; j++) {
@@ -214,9 +213,21 @@ export function pickParentFromTournament(population: Individual[], tournamentSiz
     return best;
 }
 
+export function crossOver(a: Individual, b: Individual, strategy: string, parentRatio: number, nbVertices: number, nbColor: number): Individual {
+    switch(strategy) {
+        case "polygon":
+            return crossOverPolygon(a, b, parentRatio, nbVertices, nbColor);
+        case "vertex":
+            return crossOverVertex(a, b, parentRatio, nbVertices, nbColor);
+        case "data":
+            return crossOverData(a, b, parentRatio, nbVertices, nbColor);
+        default:
+            return crossOverSinglePoint(a, b, parentRatio, nbVertices, nbColor);
+    }
+}
+
 // Crossover with single point crossover
-/*
-function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: number): Individual {
+function crossOverSinglePoint(a: Individual, b: Individual, parentRatio: number, nbVertices: number, nbColor: number): Individual {
     const child: Individual = {
         genes: [],
         fitness: 0,
@@ -228,10 +239,9 @@ function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: nu
         phenotype: []
     };
 
-    let ratio = 0.6;
     const polygonSize = (nbVertices * 2 + nbColor);
     const nbPolygons = nbVertices / polygonSize;
-    const splitIndex = Math.floor(nbPolygons * ratio) * polygonSize;
+    const splitIndex = Math.floor(nbPolygons * parentRatio) * polygonSize;
     const primaryGenes = a.fitness > b.fitness ? a.genes : b.genes;
     const secdondatyGenes = a.fitness > b.fitness ? b.genes : a.genes;
 
@@ -239,20 +249,6 @@ function crossOver(a: Individual, b: Individual, nbVertices: number, nbColor: nu
     child.genes = child.genes.concat(secdondatyGenes.slice(splitIndex));
 
     return child;
-}
-*/
-
-export function crossOver(a: Individual, b: Individual, strategy: string, parentRatio: number, nbVertices: number, nbColor: number): Individual {
-    switch(strategy) {
-        case "polygon":
-            return crossOverPolygon(a, b, parentRatio, nbVertices, nbColor);
-        case "vertex":
-            return crossOverVertex(a, b, parentRatio, nbVertices, nbColor);
-        case "data":
-            return crossOverData(a, b, parentRatio, nbVertices, nbColor);
-        default:
-            return a;
-    }
 }
 
 // Crossover on polygon granularity

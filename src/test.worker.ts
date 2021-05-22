@@ -239,7 +239,7 @@ self.addEventListener("message", e => {
 
             for (let i = 0; i < config.population; i++) {
                 const rand = Math.random();
-                if (rand < 0.1) {
+                if (rand < config.keepPreviousRatio) {
                     // Add an previous individual that may be mutated
                     const happySelectInd = pickParent(previousPop);
                     const mutant: Individual = mutate(
@@ -270,7 +270,7 @@ self.addEventListener("message", e => {
                     mutant.diff = result.diff;
                     nextPop.push(mutant);
                 }
-                else if (rand < 0.2) {
+                else if (rand < (config.keepPreviousRatio + config.newIndividualRatio)) {
                     // Create a new individual
                     const ind = createIndividual(config.nbPolygons, config.nbVertex, nbColors, msg.renderingWidth, msg.renderingHeight);
                     const result = evaluate(
