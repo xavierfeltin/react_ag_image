@@ -39,17 +39,19 @@ function App() {
     parentSelectionStrategy: "tournament",
     selectCutoff: 0.2,
     tournamentSize: 3,
-    keepPreviousRatio: 0.15,
-    newIndividualRatio: 0.05,
-    crossoverParentRatio: 0.7,
-    mutationRate: 0.2,
+    keepPreviousRatio: 0.01,
+    newIndividualRatio: 0.01,
+    crossoverParentRatio: 0.6,
+    mutationRate: 0.01,
     crossoverStrategy: "polygon",
-    vertexMovement: 0.1,
+    vertexMovement: 0.15,
     colorModificationRate: 0.1,
     enableSsim: true,
     enablePixelDiff: false,
+    enableSubDiff: false,
     ratioSsim: 1,
     ratioPixelDiff: 1,
+    ratioSubDiff: 1,
     enableTransparency: true,
     nbVertex: 3,
     nbPolygons: 125
@@ -62,6 +64,7 @@ function App() {
       fitness: 0,
       ssim: 0,
       pixelDiff: 0,
+      subPixel: 0,
       diff: undefined,
       id: 0,
       probability: 0,
@@ -145,6 +148,7 @@ function App() {
           fitness: 0,
           ssim: 0,
           pixelDiff: 0,
+          subPixel: 0,
           diff: undefined,
           id: 0,
           probability: 0,
@@ -198,8 +202,8 @@ function App() {
           best: simulation.best,
           population: simulation.population,
           generation: simulation.generation,
-          renderingHeight: simDimensions.width,
-          renderingWidth: simDimensions.height
+          renderingHeight: simDimensions.height,
+          renderingWidth: simDimensions.width
         };
 
         console.log("post message for first generation");
@@ -239,6 +243,7 @@ function App() {
           fitness={simulation.best.fitness} 
           ssim={simulation.best.ssim}
           pixelDiff={simulation.best.pixelDiff}
+          subPixel={simulation.best.subPixel}
           idBest={simulation.best.id} 
           elapsedTimeForGeneration={simulation.elapsedTime}
           notImprovingSince={simulation.notImprovingSince}
@@ -260,8 +265,10 @@ function App() {
           colorModificationRate={configuration.colorModificationRate}
           enableSsim={configuration.enableSsim}
           enablePixelDiff={configuration.enablePixelDiff}
+          enableSubDiff={configuration.enableSubDiff}
           ratioSsim={configuration.ratioSsim}
           ratioPixelDiff={configuration.ratioPixelDiff}
+          ratioSubDiff={configuration.ratioSubDiff}
           enableTransparency={configuration.enableTransparency}
           nbVertex={configuration.nbVertex}
           nbPolygons={configuration.nbPolygons}

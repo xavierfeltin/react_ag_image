@@ -10,7 +10,7 @@ import { Context } from "vm";
 declare const self: Worker;
 export default {} as typeof Worker & { new (): Worker };
 
-function evaluatePopulation(population: Individual[], enableSsim: boolean, enablePixelDiff: boolean, ratioSsim: number, ratioPixelDiff: number, nbVertices: number, nbColor: number, originalImage: ImageData, ctx: Context): Individual[] {
+function evaluatePopulation(population: Individual[], enableSsim: boolean, enablePixelDiff: boolean, enableSubDiff: boolean, ratioSsim: number, ratioPixelDiff: number, ratioSubDiff: number, nbVertices: number, nbColor: number, originalImage: ImageData, ctx: Context): Individual[] {
     if(!ctx) {
         return [...population];
     }
@@ -19,13 +19,14 @@ function evaluatePopulation(population: Individual[], enableSsim: boolean, enabl
     for (let i = 0; i < population.length; i++) {        
         // Draw the image from the genes
         const ind = population[i];
-        const result = evaluate(ind, enableSsim, enablePixelDiff, ratioSsim, ratioPixelDiff, nbVertices, nbColor, originalImage, ctx);
+        const result = evaluate(ind, enableSsim, enablePixelDiff, enableSubDiff, ratioSsim, ratioPixelDiff, ratioSubDiff, nbVertices, nbColor, originalImage, ctx);
         
         const evaluatedInd: Individual = {
             genes: [...ind.genes],
             fitness: result.fitness,
             ssim: result.ssim,
             pixelDiff: result.pixelDiff,
+            subPixel: result.subPixel,
             diff: result.diff,
             probability: 0,
             id: ind.id,
@@ -38,7 +39,7 @@ function evaluatePopulation(population: Individual[], enableSsim: boolean, enabl
     return evaluatedPopulation;
 }
 
-function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean, ratioSsim: number, ratioPixelDiff: number, nbVertices: number, nbColor: number, image: ImageData, ctx: Context): Result {
+function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean, enableSubDiff: boolean, ratioSsim: number, ratioPixelDiff: number, ratioSubDiff: number, nbVertices: number, nbColor: number, image: ImageData, ctx: Context): Result {
     
     ind.phenotype = buildPhenotypeFromGenes(ind.genes, nbVertices, nbColor);
     
@@ -93,11 +94,26 @@ function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean
     else {
         overloadRatioPixelDiff = 0;
     }
+
+    let substractResult = 0;
+    let overloadRatioSubDiff = ratioSubDiff;
+    if (enableSubDiff) {
+        let diffPixels = 0;
+        const nbImageData = image.width * image.height * nbColor;
+        for (let i = 0; i < nbImageData; i++)
+            diffPixels += Math.abs(image.data[i] - generatedImage.data[i]);
+    
+        substractResult = 1 - diffPixels / (image.width * image.height * nbColor * 256);    
+    }
+    else {
+        overloadRatioSubDiff = 0;
+    }
     
     const result: Result = {
-        fitness: (ssimResult.mssim * overloadRatioSsim + ratioMatchingPixel * overloadRatioPixelDiff) / (overloadRatioSsim + overloadRatioPixelDiff),
+        fitness: (ssimResult.mssim * overloadRatioSsim + ratioMatchingPixel * overloadRatioPixelDiff + substractResult * overloadRatioSubDiff) / (overloadRatioSsim + overloadRatioPixelDiff + overloadRatioSubDiff),
         ssim: ssimResult.mssim,
         pixelDiff: ratioMatchingPixel,
+        subPixel: substractResult,
         diff: diff
     }
     return result;
@@ -109,6 +125,7 @@ function mutate(ind: Individual, mutationRate: number, vertexMovement: number, c
         fitness: 0,
         ssim: 0,
         pixelDiff: 0,
+        subPixel: 0,
         diff: undefined,
         probability: 0,
         id: Date.now(),
@@ -150,11 +167,11 @@ function mutate(ind: Individual, mutationRate: number, vertexMovement: number, c
                 let c = ind.genes[i] + ind.genes[i] * range;
                 const isAlpha = nbColor === 4 && (relativeIndex === (polygonSize - 1));
                 if (isAlpha) {
-                    c = Math.max(0, Math.min(c, 1));
+                    c = Math.max(0.2, Math.min(c, 1));
                 }
                 else {
                     c = Math.round(c);
-                    c = Math.max(0.2, Math.min(c, 255));
+                    c = Math.max(0, Math.min(c, 255));
                 }
                 mutant.genes.push(c);
                 i++;
@@ -221,8 +238,10 @@ self.addEventListener("message", e => {
                 nextPop, 
                 config.enableSsim,
                 config.enablePixelDiff,
+                config.enableSubDiff,
                 config.ratioSsim,
                 config.ratioPixelDiff,
+                config.ratioSubDiff,
                 config.nbVertex,
                 nbColors,
                 scaledOriginalImage,
@@ -257,8 +276,10 @@ self.addEventListener("message", e => {
                         mutant, 
                         config.enableSsim,
                         config.enablePixelDiff,
+                        config.enableSubDiff,
                         config.ratioSsim,
                         config.ratioPixelDiff,
+                        config.ratioSubDiff,
                         config.nbVertex,
                         nbColors,
                         scaledOriginalImage, 
@@ -277,8 +298,10 @@ self.addEventListener("message", e => {
                         ind, 
                         config.enableSsim,
                         config.enablePixelDiff,
+                        config.enableSubDiff,
                         config.ratioSsim,
                         config.ratioPixelDiff,
+                        config.ratioSubDiff,
                         config.nbVertex,
                         nbColors,
                         scaledOriginalImage, 
@@ -320,8 +343,10 @@ self.addEventListener("message", e => {
                         child, 
                         config.enableSsim,
                         config.enablePixelDiff,
+                        config.enableSubDiff,
                         config.ratioSsim,
                         config.ratioPixelDiff,
+                        config.ratioSubDiff,
                         config.nbVertex,
                         nbColors,
                         scaledOriginalImage, 

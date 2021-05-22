@@ -17,8 +17,10 @@ export interface InputRangeProps {
     colorModificationRate: number;
     enableSsim: boolean;
     enablePixelDiff: boolean;
+    enableSubDiff: boolean;
     ratioSsim: number;
     ratioPixelDiff: number;
+    ratioSubDiff: number;
     enableTransparency: boolean;
     nbVertex: number;
     nbPolygons: number;
@@ -40,8 +42,10 @@ export function GAConfiguration({
     colorModificationRate,
     enableSsim,
     enablePixelDiff,
+    enableSubDiff,
     ratioSsim,
     ratioPixelDiff,
+    ratioSubDiff,
     enableTransparency,
     nbVertex,
     nbPolygons,
@@ -61,8 +65,10 @@ export function GAConfiguration({
             colorModificationRate: colorModificationRate,
             enableSsim: enableSsim,
             enablePixelDiff: enablePixelDiff,
+            enableSubDiff: enableSubDiff,
             ratioSsim: ratioSsim,
             ratioPixelDiff: ratioPixelDiff,
+            ratioSubDiff: ratioSubDiff,
             enableTransparency: enableTransparency,
             nbVertex: nbVertex,
             nbPolygons: nbPolygons
@@ -76,8 +82,8 @@ export function GAConfiguration({
         <div className={className}>
             <h3> Genetic Algorithm </h3>
             <InputRange id="ga-population" name="ga-population" label="Population" min={10} max={300} defaultVal={values.population} step={1} onChange={v => setValues({...values, population: v})}/>
-            <InputRange id="ga-keep-previous" name="ga-keep-previous" label="Keep previous individual" min={0} max={1} defaultVal={values.keepPreviousRatio} step={0.05}onChange={v => setValues({...values, keepPreviousRatio: v})}/>
-            <InputRange id="ga-new-individual" name="ga-new-individual" label="Generate new individual" min={0} max={1} defaultVal={values.newIndividualRatio} step={0.05} onChange={v => setValues({...values, newIndividualRatio: v})}/>
+            <InputRange id="ga-keep-previous" name="ga-keep-previous" label="Keep previous individual" min={0} max={1} defaultVal={values.keepPreviousRatio} step={0.01}onChange={v => setValues({...values, keepPreviousRatio: v})}/>
+            <InputRange id="ga-new-individual" name="ga-new-individual" label="Generate new individual" min={0} max={1} defaultVal={values.newIndividualRatio} step={0.01} onChange={v => setValues({...values, newIndividualRatio: v})}/>
             
             <div>
                 <span><b>Parent selection strategy</b></span>
@@ -121,9 +127,9 @@ export function GAConfiguration({
                     </label>
                 </div>
             </div>
-            <InputRange id="ga-mutation" name="ga-mutation" label="Mutation rate" min={0} max={1} defaultVal={values.mutationRate} step={0.05} onChange={v => setValues({...values, mutationRate: v})}/>
-            <InputRange id="ga-vertex-movement" name="ga-vertex-movement" label="Vertex movement" min={0} max={0.5} defaultVal={values.vertexMovement} step={0.05} onChange={v => setValues({...values, vertexMovement: v})}/>
-            <InputRange id="ga-color-modification" name="ga-color-modification" label="Color modification" min={0} max={1} defaultVal={values.colorModificationRate} step={0.05} onChange={v => setValues({...values, colorModificationRate: v})}/>
+            <InputRange id="ga-mutation" name="ga-mutation" label="Mutation rate" min={0} max={1} defaultVal={values.mutationRate} step={0.01} onChange={v => setValues({...values, mutationRate: v})}/>
+            <InputRange id="ga-vertex-movement" name="ga-vertex-movement" label="Vertex movement" min={0} max={0.5} defaultVal={values.vertexMovement} step={0.01} onChange={v => setValues({...values, vertexMovement: v})}/>
+            <InputRange id="ga-color-modification" name="ga-color-modification" label="Color modification" min={0} max={1} defaultVal={values.colorModificationRate} step={0.01} onChange={v => setValues({...values, colorModificationRate: v})}/>
 
             <h3> Image rendering </h3>
             <div>
@@ -134,11 +140,18 @@ export function GAConfiguration({
                 <label className="gaconfiguration-one" htmlFor="ga-pixeldiff">Pixel differenciation:</label>
                 <input className="gaconfiguration-three" type="checkbox" id="ga-pixeldiff" value="pixeldiff" checked={values.enablePixelDiff} onChange={v => setValues({...values, enablePixelDiff: v.target.checked})}/>
             </div>
-            {values.enableSsim && values.enablePixelDiff &&
-                <div>
-                    <InputRange id="ga-ssim-ratio" name="ga-ssim-ratio" label="Ratio Ssim" min={0} max={10} defaultVal={values.ratioSsim} step={1} onChange={v => setValues({...values, ratioSsim: v})}/>
-                    <InputRange id="ga-pixldiff-ratio" name="ga-pixldiff-ration" label="Ratio Pixel" min={0} max={10} defaultVal={values.ratioPixelDiff} step={1} onChange={v => setValues({...values, ratioPixelDiff: v})}/>            
-                </div>
+            <div>            
+                <label className="gaconfiguration-one" htmlFor="ga-subdiff">Pixel substraction:</label>
+                <input className="gaconfiguration-three" type="checkbox" id="ga-subdiff" value="subdiff" checked={values.enableSubDiff} onChange={v => setValues({...values, enableSubDiff: v.target.checked})}/>
+            </div>
+            {values.enableSsim &&
+                <InputRange id="ga-ssim-ratio" name="ga-ssim-ratio" label="Ratio Ssim" min={0} max={10} defaultVal={values.ratioSsim} step={1} onChange={v => setValues({...values, ratioSsim: v})}/>
+            }
+            {values.enablePixelDiff && 
+                <InputRange id="ga-pixldiff-ratio" name="ga-pixldiff-ration" label="Ratio Pixel diff" min={0} max={10} defaultVal={values.ratioPixelDiff} step={1} onChange={v => setValues({...values, ratioPixelDiff: v})}/>
+            }
+            {values.enableSubDiff &&
+                <InputRange id="ga-subdiff-ratio" name="ga-subdiff-ration" label="Ratio Sub diff" min={0} max={10} defaultVal={values.ratioSubDiff} step={1} onChange={v => setValues({...values, ratioSubDiff: v})}/>            
             }
            
             <div>   

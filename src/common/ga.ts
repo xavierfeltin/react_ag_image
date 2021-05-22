@@ -5,6 +5,7 @@ export interface Individual {
     fitness: number;
     ssim: number;
     pixelDiff: number;
+    subPixel: number;
     diff: ImageData | undefined;
     probability: number;
     id: number
@@ -15,6 +16,7 @@ export interface Result {
     fitness: number;
     ssim: number;
     pixelDiff: number;
+    subPixel: number;
     diff: ImageData | undefined;
 }
 
@@ -32,8 +34,10 @@ export interface Configuration {
     colorModificationRate: number;
     enableSsim: boolean;
     enablePixelDiff: boolean;
+    enableSubDiff: boolean,
     ratioSsim: number;
     ratioPixelDiff: number;
+    ratioSubDiff: number;
     enableTransparency: boolean;
     nbVertex: number;
     nbPolygons: number;
@@ -47,6 +51,7 @@ export function createEmptyIndividual(): Individual {
         fitness: 0,
         ssim: 0,
         pixelDiff: 0,
+        subPixel: 0,
         diff: undefined,
         probability: 0,
         phenotype: []
@@ -64,9 +69,15 @@ export function createIndividual(nbPolygons: number, nbVertices: number, nbColor
         const x = randomNumberInRange(0, width, true);
         const y = randomNumberInRange(0, height, true);
 
-        for (let j = 0; j < nbVertices; j++) {            
-            genes.push(x + randomNumberInRange(-rangeW, rangeW, true));
-            genes.push(y + randomNumberInRange(-rangeH, rangeH, true));
+        for (let j = 0; j < nbVertices; j++) {        
+            let newX = x + randomNumberInRange(-rangeW, rangeW, true); 
+            newX = Math.max(0, Math.min(newX, width));    
+
+            let newY = y + randomNumberInRange(-rangeH, rangeH, true); 
+            newY = Math.max(0, Math.min(newY, height));
+
+            genes.push(newX);
+            genes.push(newY);
         }
 
         for (let j = 0; j < nbColor; j++) {
@@ -81,6 +92,7 @@ export function createIndividual(nbPolygons: number, nbVertices: number, nbColor
         fitness: 0,
         ssim: 0,
         pixelDiff: 0,
+        subPixel: 0,
         diff: undefined,
         probability: 0,
         phenotype: []
@@ -233,6 +245,7 @@ function crossOverSinglePoint(a: Individual, b: Individual, parentRatio: number,
         fitness: 0,
         ssim: 0,
         pixelDiff: 0,
+        subPixel: 0,
         diff: undefined,
         probability: 0,
         id: Date.now(),
@@ -258,6 +271,7 @@ export function crossOverPolygon(a: Individual, b: Individual, parentRatio: numb
         fitness: 0,
         ssim: 0,
         pixelDiff: 0,
+        subPixel: 0,
         diff: undefined,
         probability: 0,
         id: Date.now(),
@@ -284,6 +298,7 @@ export function crossOverVertex(a: Individual, b: Individual, parentRatio: numbe
         fitness: 0,
         ssim: 0,
         pixelDiff: 0,
+        subPixel: 0,
         diff: undefined,
         probability: 0,
         id: Date.now(),
@@ -334,6 +349,7 @@ export function crossOverData(a: Individual, b: Individual, parentRatio: number,
         fitness: 0,
         ssim: 0,
         pixelDiff: 0,
+        subPixel: 0,
         diff: undefined,
         probability: 0,
         id: Date.now(),
