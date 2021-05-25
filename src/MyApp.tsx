@@ -244,7 +244,7 @@ function MyApp() {
           <div className="five">
           <Tabs>
           <TabList>
-            <Tab>Running simulation</Tab>
+            <Tab>Painting Art</Tab>
             <Tab>Genetic Algorithm parameters</Tab>
           </TabList>
 

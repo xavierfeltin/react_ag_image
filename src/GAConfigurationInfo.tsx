@@ -51,8 +51,8 @@ export function GAConfigurationInfo({
 
     const generateTournamentInforation = (): JSX.Element[] => {
         const elements: JSX.Element[] = []; 
-        elements.push(<Tr key="tr-1"><Td><span> Selection cutoff:</span></Td><Td><span>{selectCutoff}</span></Td></Tr>);
-        elements.push(<Tr key="tr-2"><Td><span> Tournament size::</span></Td><Td><span>{tournamentSize}</span></Td></Tr>);
+        elements.push(<Tr key="tr-1"><Td> Selection cutoff:</Td><Td isNumeric>{selectCutoff}</Td></Tr>);
+        elements.push(<Tr key="tr-2"><Td> Tournament size::</Td><Td isNumeric>{tournamentSize}</Td></Tr>);
         return elements;               
     }
 
@@ -72,7 +72,7 @@ export function GAConfigurationInfo({
         }
         
         const elements: JSX.Element[] = [];
-        elements.push(<Tr key="tr-3"><Td><span> Fitness functions:</span></Td><Td><span>{enabledEngines.join(',')}</span></Td></Tr>);
+        elements.push(<Tr key="tr-3"><Td> Fitness functions:</Td><Td isNumeric>{enabledEngines.join(',')}</Td></Tr>);
         return elements;
     }
 
@@ -84,9 +84,9 @@ export function GAConfigurationInfo({
                     <Th>General</Th>
                 </Thead>
                 <Tbody>                
-                <Tr><Td><span>Population size: </span></Td><Td><span>{population}</span></Td></Tr>
-                <Tr><Td><span>Keep from previous generation: </span></Td><Td><span>{keepPreviousRatio * 100}% </span></Td></Tr>
-                <Tr><Td><span>Insert new individual in generation: </span></Td><Td><span>{newIndividualRatio * 100}% </span></Td></Tr>
+                <Tr><Td>Population size: </Td><Td isNumeric>{population}</Td></Tr>
+                <Tr><Td>Keep from previous generation: </Td><Td isNumeric>{keepPreviousRatio * 100}% </Td></Tr>
+                <Tr><Td>Insert new individual in generation: </Td><Td isNumeric>{newIndividualRatio * 100}% </Td></Tr>
                 </Tbody>
             </Table>
 
@@ -95,10 +95,10 @@ export function GAConfigurationInfo({
                     <Th>Crossover</Th>
                 </Thead>
                 <Tbody>
-                <Tr><Td><span>Parent selection strategy:</span></Td><Td><span>{parentSelectionStrategy}</span></Td></Tr>
+                <Tr><Td>Parent selection strategy:</Td><Td isNumeric>{parentSelectionStrategy}</Td></Tr>
                 {generateTournamentInforation()}
-                <Tr><Td><span>Main parent ratio during crossover :</span></Td><Td><span>{crossoverParentRatio * 100}%</span></Td></Tr>
-                <Tr><Td><span>Crossover strategy :</span></Td><Td><span>{crossoverStrategy}</span></Td></Tr>
+                <Tr><Td>Main parent ratio during crossover :</Td><Td isNumeric>{crossoverParentRatio * 100}%</Td></Tr>
+                <Tr><Td>Crossover strategy :</Td><Td isNumeric>{crossoverStrategy}</Td></Tr>
                 </Tbody>
             </Table>
 
@@ -107,9 +107,9 @@ export function GAConfigurationInfo({
                     <Th>Mutation</Th>
                 </Thead>
                 <Tbody>    
-                <Tr><Td><span>Mutation rate :</span></Td><Td><span>{mutationRate * 100}%</span></Td></Tr>
-                <Tr><Td><span>Vertex movement during mutation :</span></Td><Td><span>{vertexMovement * 100}%</span></Td></Tr>
-                <Tr><Td><span>Color movement during mutation :</span></Td><Td><span>{colorModificationRate * 100}%</span></Td></Tr>
+                <Tr><Td>Mutation rate :</Td><Td isNumeric>{mutationRate * 100}%</Td></Tr>
+                <Tr><Td>Vertex movement during mutation :</Td><Td isNumeric>{vertexMovement * 100}%</Td></Tr>
+                <Tr><Td>Color movement during mutation :</Td><Td isNumeric>{colorModificationRate * 100}%</Td></Tr>
                 </Tbody>
             </Table>
 
@@ -119,9 +119,9 @@ export function GAConfigurationInfo({
                 </Thead>
                 <Tbody>                              
                 {generateFitnessEngineInformation()}
-                <Tr><Td><span>Transparency enabled :</span></Td><Td><span>{enableTransparency}</span></Td></Tr>
-                <Tr><Td><span>Vertex by polygon :</span></Td><Td><span>{nbVertex}</span></Td></Tr>
-                <Tr><Td><span>Generated polygons :</span></Td><Td><span>{nbPolygons}</span></Td></Tr>         
+                <Tr><Td>Transparency enabled :</Td><Td isNumeric>{enableTransparency}</Td></Tr>
+                <Tr><Td>Vertex by polygon :</Td><Td isNumeric>{nbVertex}</Td></Tr>
+                <Tr><Td>Generated polygons :</Td><Td isNumeric>{nbPolygons}</Td></Tr>         
                 </Tbody>   
             </Table>
             </VStack>

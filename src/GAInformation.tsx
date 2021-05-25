@@ -1,3 +1,5 @@
+import { Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/table";
+
 export interface GAInfoProps {
     generation: number;  
     fitness: number;
@@ -13,12 +15,21 @@ export interface GAInfoProps {
 export function GAInformation({ generation, fitness, ssim, pixelDiff, subPixel, idBest, elapsedTimeForGeneration, notImprovingSince, className }: GAInfoProps) {
     return (
         <div className={className}>
-          <p> Generation: {generation} 
-            {notImprovingSince > 0 && <span> (not improving since {notImprovingSince}) </span>}
-          </p>
-          <p> Time for a generation: {elapsedTimeForGeneration} seconds </p>
-          <p> Fitness: {(fitness * 100.0).toFixed(2)}%  - [SSIM: {(ssim * 100.0).toFixed(2)}%, Pixel Diff: {(pixelDiff * 100.0).toFixed(2)}%, Sub Pixel: {(subPixel * 100.0).toFixed(2)}%]</p>
-          <p> idBest: {idBest} </p>
+          <Table variant="striped">
+            <Thead>
+            <Th> Simulation </Th>
+            </Thead>
+            <Tbody>
+            <Tr><Td>Generation:</Td><Td isNumeric>{generation}</Td></Tr>
+            <Tr><Td>Not improving since:</Td><Td isNumeric>{notImprovingSince}</Td></Tr>
+            <Tr><Td>Time by generation:</Td><Td isNumeric>{elapsedTimeForGeneration} seconds</Td></Tr>
+            <Tr><Td>Global fitness:</Td><Td isNumeric>{(fitness * 100.0).toFixed(2)}%</Td></Tr>
+            <Tr><Td>Ssim fitness:</Td><Td isNumeric>{(ssim * 100.0).toFixed(2)}%</Td></Tr>
+            <Tr><Td>Pixel Diff fitness:</Td><Td isNumeric>{(pixelDiff * 100.0).toFixed(2)}%</Td></Tr>
+            <Tr><Td>Sub Pixel fitness:</Td><Td isNumeric>{(subPixel * 100.0).toFixed(2)}%</Td></Tr>
+            <Tr><Td>Best indivudial:</Td><Td isNumeric>{idBest}</Td></Tr>
+            </Tbody>
+          </Table>
         </div>
     );    
 }
