@@ -1,6 +1,7 @@
 import './RendererFromUrl.css';
 import { useEffect, useRef, useState } from 'react';
 import { getLimitDimensions } from './common/geometry';
+import { Alert, AlertDescription, AlertIcon, AlertTitle } from '@chakra-ui/alert';
 
 export interface RendererProps {
     name: string;  
@@ -55,15 +56,15 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn, onLoadingError
     }, [url, limit, onImageDrawn, onLoadingError, imageUrl]);
 
     return (
-        <div>
+        <div className={isErrorOnLoad ? classNameOnError : className}>
             {isErrorOnLoad &&
-                <div className={classNameOnError}>
-                <p className="error">The image {url} could not be loaded. Try with another URL.</p>
-                </div> 
+                <Alert status="error">
+                    <AlertIcon />
+                    <AlertTitle mr={2}>Loading error!</AlertTitle>
+                    <AlertDescription>The image {url} could not be loaded. Try with another URL.</AlertDescription>
+                </Alert>
             }
-            <div className={className}>
             <canvas id={name} ref={canvasRef} />
-            </div>
         </div>
     );
 }

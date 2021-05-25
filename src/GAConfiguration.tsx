@@ -2,6 +2,7 @@ import './GAConfiguration.css';
 import { useEffect, useState } from "react";
 import { Configuration } from "./common/ga";
 import { InputRange } from "./InputRange"
+import { Switch } from "@chakra-ui/react"
 
 export interface InputRangeProps {
     population: number;
@@ -133,16 +134,16 @@ export function GAConfiguration({
 
             <h3> Image rendering </h3>
             <div>
-                <label className="gaconfiguration-one" htmlFor="ga-ssim">SSIM:</label>
-                <input className="gaconfiguration-three" type="checkbox" id="ga-ssim" value="ssim" checked={values.enableSsim} onChange={v =>{setValues({...values, enableSsim: v.target.checked})}}/>
+                <label htmlFor="ga-ssim">SSIM:</label>
+                <Switch className="ga-chakra-switch" id="ga-ssim" value="ssim" isChecked={values.enableSsim} onChange={v =>{setValues({...values, enableSsim: v.target.checked})}}/>
             </div>
             <div>            
-                <label className="gaconfiguration-one" htmlFor="ga-pixeldiff">Pixel differenciation:</label>
-                <input className="gaconfiguration-three" type="checkbox" id="ga-pixeldiff" value="pixeldiff" checked={values.enablePixelDiff} onChange={v => setValues({...values, enablePixelDiff: v.target.checked})}/>
+                <label htmlFor="ga-pixeldiff">Pixel differenciation:</label>
+                <Switch className="ga-chakra-switch" id="ga-pixeldiff" value="pixeldiff" isChecked={values.enablePixelDiff} onChange={v => setValues({...values, enablePixelDiff: v.target.checked})}/>
             </div>
             <div>            
-                <label className="gaconfiguration-one" htmlFor="ga-subdiff">Pixel substraction:</label>
-                <input className="gaconfiguration-three" type="checkbox" id="ga-subdiff" value="subdiff" checked={values.enableSubDiff} onChange={v => setValues({...values, enableSubDiff: v.target.checked})}/>
+                <label htmlFor="ga-subdiff">Pixel substraction:</label>
+                <Switch className="ga-chakra-switch" id="ga-subdiff" value="subdiff" isChecked={values.enableSubDiff} onChange={v => setValues({...values, enableSubDiff: v.target.checked})}/>
             </div>
             {values.enableSsim &&
                 <InputRange id="ga-ssim-ratio" name="ga-ssim-ratio" label="Ratio Ssim" min={0} max={10} defaultVal={values.ratioSsim} step={1} onChange={v => setValues({...values, ratioSsim: v})}/>
@@ -155,8 +156,8 @@ export function GAConfiguration({
             }
            
             <div>   
-                <label className="gaconfiguration-one" htmlFor="ga-transparency">Transparency:</label>
-                <input className="gaconfiguration-three" type="checkbox" id="ga-transparency" value="transparency" checked={values.enableTransparency} onChange={v => setValues({...values, enableTransparency: v.target.checked})}/>
+                <label htmlFor="ga-transparency">Transparency:</label>
+                <Switch className="ga-chakra-switch" id="ga-transparency" value="transparency" isChecked={values.enableTransparency} onChange={v => setValues({...values, enableTransparency: v.target.checked})}/>
             </div>
 
             <InputRange id="ga-vertex" name="ga-vertex" label="Vertex" min={3} max={10} defaultVal={values.nbVertex} step={1} onChange={v => setValues({...values, nbVertex: v})}/>

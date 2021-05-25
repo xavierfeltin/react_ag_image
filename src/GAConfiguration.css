@@ -9,6 +9,14 @@ input[type="checkbox"] {
     width: 50px;
 }
 
+.ga-chakra-switch{
+    vertical-align: middle;
+    float: right;
+    text-align: center;
+    width: 50px;
+}
+
+
 .ga-strategy-div {
     display: flex;
 }

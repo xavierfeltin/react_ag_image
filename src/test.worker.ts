@@ -288,6 +288,7 @@ self.addEventListener("message", e => {
                     mutant.fitness = result.fitness;
                     mutant.ssim = result.ssim;
                     mutant.pixelDiff = result.pixelDiff;
+                    mutant.subPixel = result.subPixel;
                     mutant.diff = result.diff;
                     nextPop.push(mutant);
                 }
@@ -310,6 +311,7 @@ self.addEventListener("message", e => {
                     ind.fitness = result.fitness;
                     ind.ssim = result.ssim;
                     ind.pixelDiff = result.pixelDiff;
+                    ind.subPixel = result.subPixel;
                     ind.diff = result.diff;
                     nextPop.push(ind);
                 }
@@ -355,6 +357,7 @@ self.addEventListener("message", e => {
                     child.fitness = result.fitness;
                     child.ssim = result.ssim;
                     child.pixelDiff = result.pixelDiff;
+                    child.subPixel = result.subPixel;
                     child.diff = result.diff;
                     nextPop.push(child);
                 }

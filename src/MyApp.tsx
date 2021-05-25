@@ -1,4 +1,4 @@
-import './App.css';
+import './MyApp.css';
 import {useState, useCallback, useEffect} from "react";
 
 import MyWorker from './test.worker';
@@ -11,8 +11,11 @@ import { RendererFromData } from './RendererFromData';
 import { GAInformation } from './GAInformation';
 import { GAConfiguration } from './GAConfiguration';
 import { Configuration } from './common/ga';
+import { GAConfigurationInfo } from './GAConfigurationInfo';
 
-function App() {
+import { Tabs, TabList, TabPanels, Tab, TabPanel } from "@chakra-ui/react"
+
+function MyApp() {
 
   const limitImageSize = 256;
   const sampleLnks: {name: string, link: string}[] = [
@@ -236,21 +239,60 @@ function App() {
       { simulation.best.diff && !isStopped &&
         <RendererFromData className="four" name={"diff-image"} width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} data={simulation.best.diff}/>        
       }
-      { !isStopped &&
-        <GAInformation 
-          className="five" 
-          generation={simulation.generation} 
-          fitness={simulation.best.fitness} 
-          ssim={simulation.best.ssim}
-          pixelDiff={simulation.best.pixelDiff}
-          subPixel={simulation.best.subPixel}
-          idBest={simulation.best.id} 
-          elapsedTimeForGeneration={simulation.elapsedTime}
-          notImprovingSince={simulation.notImprovingSince}
-        />
-      }            
-      {
-        isStopped &&
+      
+      {!isStopped &&
+          <div className="five">
+          <Tabs>
+          <TabList>
+            <Tab>Running simulation</Tab>
+            <Tab>Genetic Algorithm parameters</Tab>
+          </TabList>
+
+          <TabPanels>
+            <TabPanel>
+              <GAInformation 
+                className="" 
+                generation={simulation.generation} 
+                fitness={simulation.best.fitness} 
+                ssim={simulation.best.ssim}
+                pixelDiff={simulation.best.pixelDiff}
+                subPixel={simulation.best.subPixel}
+                idBest={simulation.best.id} 
+                elapsedTimeForGeneration={simulation.elapsedTime}
+                notImprovingSince={simulation.notImprovingSince}
+              />
+            </TabPanel>
+            <TabPanel>
+              <GAConfigurationInfo 
+                population={configuration.population}
+                parentSelectionStrategy={configuration.parentSelectionStrategy}
+                selectCutoff={configuration.selectCutoff}
+                tournamentSize={configuration.tournamentSize}
+                keepPreviousRatio={configuration.keepPreviousRatio}
+                newIndividualRatio={configuration.newIndividualRatio}
+                crossoverParentRatio={configuration.crossoverParentRatio}
+                mutationRate={configuration.mutationRate}
+                crossoverStrategy={configuration.crossoverStrategy}
+                vertexMovement={configuration.vertexMovement}
+                colorModificationRate={configuration.colorModificationRate}
+                enableSsim={configuration.enableSsim}
+                enablePixelDiff={configuration.enablePixelDiff}
+                enableSubDiff={configuration.enableSubDiff}
+                ratioSsim={configuration.ratioSsim}
+                ratioPixelDiff={configuration.ratioPixelDiff}
+                ratioSubDiff={configuration.ratioSubDiff}
+                enableTransparency={configuration.enableTransparency}
+                nbVertex={configuration.nbVertex}
+                nbPolygons={configuration.nbPolygons}
+                className="" 
+              /> 
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
+        </div>
+      }
+
+      {isStopped &&
         <GAConfiguration
           population={configuration.population}
           parentSelectionStrategy={configuration.parentSelectionStrategy}
@@ -280,4 +322,4 @@ function App() {
   );
 }
 
-export default App;
+export default MyApp;

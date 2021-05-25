@@ -15,12 +15,9 @@ export function GAInformation({ generation, fitness, ssim, pixelDiff, subPixel, 
         <div className={className}>
           <p> Generation: {generation} 
             {notImprovingSince > 0 && <span> (not improving since {notImprovingSince}) </span>}
-        </p>
-          <p> Simulation time: {elapsedTimeForGeneration} seconds </p>
-          <p> Fitness: {fitness} </p>
-          <p> - SSIM: {ssim} </p>
-          <p> - Pixel Diff: {pixelDiff} </p>
-          <p> - Sub Pixel: {subPixel} </p>
+          </p>
+          <p> Time for a generation: {elapsedTimeForGeneration} seconds </p>
+          <p> Fitness: {(fitness * 100.0).toFixed(2)}%  - [SSIM: {(ssim * 100.0).toFixed(2)}%, Pixel Diff: {(pixelDiff * 100.0).toFixed(2)}%, Sub Pixel: {(subPixel * 100.0).toFixed(2)}%]</p>
           <p> idBest: {idBest} </p>
         </div>
     );    
