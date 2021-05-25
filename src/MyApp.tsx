@@ -28,8 +28,12 @@ function MyApp() {
       link: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/390px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg"
     },
     { 
-      name: "Photographe",
+      name: "Photographer",
       link: "https://i.picsum.photos/id/823/420/560.jpg?hmac=H6lJE4fRi96MxgWYyd3_79WbmObu-jJj7Zo40p5I-nU"
+    },
+    { 
+      name: "Landscape",
+      link: "https://i.picsum.photos/id/1015/420/560.jpg?hmac=JcSYiOeUMQYq_XstyekCWyhAlg_e8UiPWxp66v-ki6Q"
     },
     { 
       name: "Random",
@@ -57,7 +61,8 @@ function MyApp() {
     ratioSubDiff: 1,
     enableTransparency: true,
     nbVertex: 3,
-    nbPolygons: 125
+    nbPolygons: 125,
+    resolution: 64
   });
 
   const [simulation, setSimulation] = useState<AGworkerOut>({
@@ -172,7 +177,7 @@ function MyApp() {
     const imageWidth: number = img.width as number;
     const imageHeight: number = img.height as number;
 
-    const simDimensions = getLimitDimensions(imageWidth, imageHeight, 64);  
+    const simDimensions = getLimitDimensions(imageWidth, imageHeight, configuration.resolution);  
     const ratioW = simDimensions.width / renderedWidth;
     const ratioH = simDimensions.height / renderedHeight; 
 
@@ -192,7 +197,7 @@ function MyApp() {
         offscreenHeight: simDimensions.height,
         ratioOffscreenWidth: ratioW,
         ratioOffscreenHeight: ratioH,
-        limitOffscreen: 64
+        limitOffscreen: configuration.resolution
       });  
 
       if (myWorkerInstance && image) {
@@ -284,6 +289,7 @@ function MyApp() {
                 enableTransparency={configuration.enableTransparency}
                 nbVertex={configuration.nbVertex}
                 nbPolygons={configuration.nbPolygons}
+                resolution={configuration.resolution}
                 className="" 
               /> 
             </TabPanel>
@@ -314,6 +320,7 @@ function MyApp() {
           enableTransparency={configuration.enableTransparency}
           nbVertex={configuration.nbVertex}
           nbPolygons={configuration.nbPolygons}
+          resolution={configuration.resolution}
           className="five" 
           onValuesChange={handleValuesChange}
         />

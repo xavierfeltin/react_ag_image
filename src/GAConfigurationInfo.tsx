@@ -1,6 +1,5 @@
 import { VStack } from "@chakra-ui/layout";
 import { Table, Tbody, Td, Th, Thead, Tr } from "@chakra-ui/table";
-import "./GAConfigurationInfo.css";
 
 export interface InputRangeProps {
     population: number;
@@ -23,6 +22,7 @@ export interface InputRangeProps {
     enableTransparency: boolean;
     nbVertex: number;
     nbPolygons: number;
+    resolution: number;
     className: string;
 }
 
@@ -47,6 +47,7 @@ export function GAConfigurationInfo({
     enableTransparency,
     nbVertex,
     nbPolygons,
+    resolution,
     className}: InputRangeProps) {
 
     const generateTournamentInforation = (): JSX.Element[] => {
@@ -81,7 +82,7 @@ export function GAConfigurationInfo({
             <VStack spacing={6}>
             <Table variant="striped">
                 <Thead>
-                    <Th>General</Th>
+                    <Tr><Th>General</Th></Tr>
                 </Thead>
                 <Tbody>                
                 <Tr><Td>Population size: </Td><Td isNumeric>{population}</Td></Tr>
@@ -92,7 +93,7 @@ export function GAConfigurationInfo({
 
             <Table variant="striped">
                 <Thead>
-                    <Th>Crossover</Th>
+                    <Tr><Th>Crossover</Th></Tr>
                 </Thead>
                 <Tbody>
                 <Tr><Td>Parent selection strategy:</Td><Td isNumeric>{parentSelectionStrategy}</Td></Tr>
@@ -104,7 +105,7 @@ export function GAConfigurationInfo({
 
             <Table variant="striped">
                 <Thead>
-                    <Th>Mutation</Th>
+                   <Tr><Th>Mutation</Th></Tr> 
                 </Thead>
                 <Tbody>    
                 <Tr><Td>Mutation rate :</Td><Td isNumeric>{mutationRate * 100}%</Td></Tr>
@@ -115,9 +116,10 @@ export function GAConfigurationInfo({
 
             <Table variant="striped">
                 <Thead>
-                    <Th>Image rendering</Th>
+                    <Tr><Th>Image rendering</Th></Tr>
                 </Thead>
-                <Tbody>                              
+                <Tbody>               
+                <Tr><Td>Resolution :</Td><Td isNumeric>{resolution}px</Td></Tr>                  
                 {generateFitnessEngineInformation()}
                 <Tr><Td>Transparency enabled :</Td><Td isNumeric>{enableTransparency}</Td></Tr>
                 <Tr><Td>Vertex by polygon :</Td><Td isNumeric>{nbVertex}</Td></Tr>

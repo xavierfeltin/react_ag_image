@@ -41,6 +41,7 @@ export interface Configuration {
     enableTransparency: boolean;
     nbVertex: number;
     nbPolygons: number;
+    resolution: number;
 }
 
 

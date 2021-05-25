@@ -17,7 +17,7 @@ export function GAInformation({ generation, fitness, ssim, pixelDiff, subPixel, 
         <div className={className}>
           <Table variant="striped">
             <Thead>
-            <Th> Simulation </Th>
+              <Tr><Th> Simulation </Th></Tr>
             </Thead>
             <Tbody>
             <Tr><Td>Generation:</Td><Td isNumeric>{generation}</Td></Tr>
