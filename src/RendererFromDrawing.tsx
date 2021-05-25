@@ -1,9 +1,11 @@
 import { useEffect, useRef } from 'react';
 import { Context } from 'vm';
 import {drawPolygon, Polygon} from "./common/geometry";
+import { Text, VStack } from "@chakra-ui/react";
 
 export interface RendererProps {
     name: string;  
+    label: string;
     width: number;
     height: number;
     ratioW: number;
@@ -23,7 +25,7 @@ function draw(ctx: Context, width: number, height: number, ratioW: number, ratio
     })
 }
 
-export function RendererFromDrawing({ name, width, height, ratioW, ratioH, drawingSteps, className }: RendererProps) {
+export function RendererFromDrawing({ name, label, width, height, ratioW, ratioH, drawingSteps, className }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -47,7 +49,10 @@ export function RendererFromDrawing({ name, width, height, ratioW, ratioH, drawi
 
     return (
         <div>
-          <canvas className={className} id={name} ref={canvasRef} />
+            <VStack>
+                <canvas className={className} id={name} ref={canvasRef} />
+                <Text fontSize="sm">{label}</Text>
+            </VStack>
         </div>
     );    
 }

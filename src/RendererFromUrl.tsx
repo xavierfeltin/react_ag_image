@@ -2,10 +2,12 @@ import './RendererFromUrl.css';
 import { useEffect, useRef, useState } from 'react';
 import { getLimitDimensions } from './common/geometry';
 import { Alert, AlertDescription, AlertIcon, AlertTitle } from '@chakra-ui/alert';
+import { Text, VStack } from '@chakra-ui/react';
 
 export interface RendererProps {
     name: string;  
     url: string;
+    label: string;
     limit?: number;
     onImageDrawn: (img: CanvasImageSource, renderedWidth: number, renderedHeight: number) => void;
     onLoadingError: () => void;
@@ -13,7 +15,7 @@ export interface RendererProps {
     classNameOnError: string;
 };
 
-export function RendererFromUrl({ name, url, limit, onImageDrawn, onLoadingError, className, classNameOnError }: RendererProps) {
+export function RendererFromUrl({ name, url, label, limit, onImageDrawn, onLoadingError, className, classNameOnError }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [isErrorOnLoad, setError] = useState<boolean>(false);
     const [imageUrl, setImageUrl] = useState<string>(""); 
@@ -64,7 +66,12 @@ export function RendererFromUrl({ name, url, limit, onImageDrawn, onLoadingError
                     <AlertDescription>The image {url} could not be loaded. Try with another URL.</AlertDescription>
                 </Alert>
             }
-            <canvas id={name} ref={canvasRef} />
+            {!isErrorOnLoad &&
+                <VStack>
+                    <canvas id={name} ref={canvasRef} />
+                    <Text fontSize="sm">{label}</Text>
+                </VStack>
+            }
         </div>
     );
 }

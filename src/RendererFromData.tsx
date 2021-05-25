@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { Context } from 'vm';
+import { Text, VStack } from '@chakra-ui/react';
 
 export interface RendererProps {
     name: string;  
+    label: string;
     width: number;
     height: number;
     ratioW: number;
@@ -18,7 +20,7 @@ function draw(ctx: Context, width: number, height: number, ratioW: number, ratio
     ctx.drawImage(canvas, 0, 0);    
 }
 
-export function RendererFromData({ name, width, height, ratioW, ratioH, data, className }: RendererProps) {
+export function RendererFromData({ name, label, width, height, ratioW, ratioH, data, className }: RendererProps) {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
@@ -41,8 +43,11 @@ export function RendererFromData({ name, width, height, ratioW, ratioH, data, cl
     }, [width, height, ratioW, ratioH, data]);
 
     return (
-        <div>
-          <canvas className={className} id={name} ref={canvasRef} />
+        <div>          
+            <VStack>
+                <canvas className={className} id={name} ref={canvasRef} />
+                <Text fontSize="sm">{label}</Text>
+            </VStack>
         </div>
     );    
 }

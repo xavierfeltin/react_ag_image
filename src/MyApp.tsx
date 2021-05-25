@@ -188,7 +188,7 @@ function MyApp() {
       ctx.scale(ratioW, ratioH);
       ctx.drawImage(img, 0, 0, renderedWidth, renderedHeight);
       const image = ctx.getImageData(0, 0, simDimensions.width, simDimensions.height);
-
+      
       setImage({
         image: image,
         renderedWidth: renderedWidth,
@@ -236,17 +236,20 @@ function MyApp() {
     <div className="wrapper">       
       <InputImageUrl className="one" links={sampleLnks} start={handleStart} stop={handleStop} isStopped={isStopped}/>
       { imageUrl &&
-        <RendererFromUrl className="two" classNameOnError="twoExpanded" name={"original-image"} onImageDrawn={handleUrlImageDrawn} onLoadingError={handleLoadingImageError} limit={limitImageSize} url={imageUrl}/>
+        <RendererFromUrl className="two" classNameOnError="twoExpanded" name={"original-image"} label="Original" onImageDrawn={handleUrlImageDrawn} onLoadingError={handleLoadingImageError} limit={limitImageSize} url={imageUrl}/>
       }
       { imageFromUrl.image && !isStopped &&
-        <RendererFromDrawing className="three" name={"generated-image"} width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} drawingSteps={simulation.best.phenotype}/>        
+        <RendererFromData className="three" name={"simu-image"} label="In memory" width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} data={imageFromUrl.image}/>        
+      }
+      { imageFromUrl.image && !isStopped &&
+        <RendererFromDrawing className="four" name={"generated-image"} label="Maestro painting" width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} drawingSteps={simulation.best.phenotype}/>        
       }
       { simulation.best.diff && !isStopped &&
-        <RendererFromData className="four" name={"diff-image"} width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} data={simulation.best.diff}/>        
+        <RendererFromData className="five" name={"diff-image"} label="Memory VS Painting" width={imageFromUrl.renderedWidth} height={imageFromUrl.renderedHeight} ratioW={1 / imageFromUrl.ratioOffscreenWidth} ratioH={1 / imageFromUrl.ratioOffscreenHeight} data={simulation.best.diff}/>        
       }
       
       {!isStopped &&
-          <div className="five">
+          <div className="six">
           <Tabs>
           <TabList>
             <Tab>Painting Art</Tab>
@@ -321,7 +324,7 @@ function MyApp() {
           nbVertex={configuration.nbVertex}
           nbPolygons={configuration.nbPolygons}
           resolution={configuration.resolution}
-          className="five" 
+          className="six" 
           onValuesChange={handleValuesChange}
         />
       }      
