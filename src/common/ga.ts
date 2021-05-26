@@ -32,6 +32,7 @@ export interface Configuration {
     crossoverStrategy: string;
     vertexMovement: number;
     colorModificationRate: number;
+    copyColorNeighborRate: number;
     enableSsim: boolean;
     enablePixelDiff: boolean;
     enableSubDiff: boolean,

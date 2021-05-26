@@ -119,7 +119,7 @@ function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean
     return result;
 }
 
-function mutate(ind: Individual, mutationRate: number, vertexMovement: number, colorModificationRate: number, nbVertices: number, nbColor: number, width: number, height: number, force: boolean): Individual {
+function mutate(ind: Individual, mutationRate: number, vertexMovement: number, colorModificationRate: number, copyColorNeighborRate: number, nbVertices: number, nbColor: number, width: number, height: number, force: boolean): Individual {
     const mutant: Individual = {
         genes: [],
         fitness: 0,
@@ -144,6 +144,7 @@ function mutate(ind: Individual, mutationRate: number, vertexMovement: number, c
             const isVertexCoordinates = relativeIndex < (nbVertices * 2);               
             const isStartingVertex = (relativeIndex % 2) === 0 && isVertexCoordinates;
             const isColorInformation = relativeIndex >= (nbVertices * 2);
+            const isStartingColorInformation = relativeIndex === (nbVertices * 2);
 
             if (isStartingVertex) {
                 //Modify the vertex
@@ -162,19 +163,29 @@ function mutate(ind: Individual, mutationRate: number, vertexMovement: number, c
                 i += 2;
             }
             else if (isColorInformation) {
-                // Change color
-                const range = randomNumberInRange(-colorModificationRate, colorModificationRate, false);
-                let c = ind.genes[i] + ind.genes[i] * range;
-                const isAlpha = nbColor === 4 && (relativeIndex === (polygonSize - 1));
-                if (isAlpha) {
-                    c = Math.max(0.2, Math.min(c, 1));
+                if (Math.random() < copyColorNeighborRate && isStartingColorInformation) {
+                    // Copy color code from neighbor polygon
+                    const startPolygonIndex = (i - relativeIndex);
+                    const copiedColor = copyColorFromNeighbor(startPolygonIndex, ind.genes, nbVertices, nbColor);   
+                    // console.log("copied color: " + JSON.stringify(copiedColor));                 
+                    mutant.genes = mutant.genes.concat(copiedColor);                                        
+                    i += nbColor;
                 }
                 else {
-                    c = Math.round(c);
-                    c = Math.max(0, Math.min(c, 255));
-                }
-                mutant.genes.push(c);
-                i++;
+                    // Change color code a bit
+                    const range = randomNumberInRange(-colorModificationRate, colorModificationRate, false);
+                    let c = ind.genes[i] + ind.genes[i] * range;
+                    const isAlpha = nbColor === 4 && (relativeIndex === (polygonSize - 1));
+                    if (isAlpha) {
+                        c = Math.max(0.2, Math.min(c, 1));
+                    }
+                    else {
+                        c = Math.round(c);
+                        c = Math.max(0, Math.min(c, 255));
+                    }
+                    mutant.genes.push(c);
+                    i++;
+                }                
             }
             else {
                 //y coordinate of a vertex do nothing to mutate it
@@ -190,6 +201,66 @@ function mutate(ind: Individual, mutationRate: number, vertexMovement: number, c
     mutant.genes = mutant.genes.concat(swapBuffer);
     return mutant;
 }
+
+function copyColorFromNeighbor(startPolygonIndex: number, genes: number[], nbVertices: number, nbColor: number): number[] {
+    
+    // Compute center of the considered polygon
+    let xCenter = 0;
+    let yCenter = 0;
+    const lastPolygonIndex = startPolygonIndex + (nbVertices * 2);
+    for (let i = startPolygonIndex; i < lastPolygonIndex; i+=2)
+    { 
+        xCenter += genes[i];
+        yCenter += genes[i + 1];
+    }
+    xCenter = Math.round(xCenter / nbVertices);
+    yCenter = Math.round(yCenter / nbVertices);
+    
+
+    let i = 0;
+    const polygonSize = nbVertices * 2 + nbColor;
+    let closestPolygonStartingIndex = 0;
+    let closestDistanceSquared = Infinity;
+    // let xClosest = 0;
+    // let yClosest = 0;
+
+    // Compare the distance of all the polygons to the center of the considered polygon
+    while (i < genes.length) {
+
+        if (i !== startPolygonIndex) {
+            let xPolyCenter = 0;
+            let yPolyCenter = 0;
+            const lastPolygonIndex = i + (nbVertices * 2);
+            for (let j = i; j < lastPolygonIndex; j+=2)
+            { 
+                xPolyCenter += genes[j];
+                yPolyCenter += genes[j + 1];
+            }
+            xPolyCenter = Math.round(xPolyCenter / nbVertices);
+            yPolyCenter = Math.round(yPolyCenter / nbVertices);
+
+            const distanceSquared = (xPolyCenter - xCenter) * (xPolyCenter - xCenter) + (yPolyCenter - yCenter) * (yPolyCenter - yCenter) 
+            if (distanceSquared < closestDistanceSquared) {
+                closestDistanceSquared = distanceSquared;
+                closestPolygonStartingIndex = i;
+                // xClosest = xPolyCenter;
+                // yClosest = yPolyCenter;
+            }
+        }
+        i += polygonSize;
+    }
+
+    // console.log("startIndex: " + startPolygonIndex + ", closest: " + closestPolygonStartingIndex);
+    // console.log(`center (${xCenter}, ${yCenter}), closest (${xClosest}, ${yClosest}), dist: ${Math.sqrt(closestDistanceSquared)}`);
+
+    // Copy color of the closest found
+    let colorCode: number[] = [];
+    for (let i = 0; i < nbColor; i++) {
+        colorCode.push(genes[closestPolygonStartingIndex + (nbVertices * 2) + i]);
+    }
+    return colorCode;
+}
+
 
 self.addEventListener("message", e => {
     if (!e) return;
@@ -266,6 +337,7 @@ self.addEventListener("message", e => {
                         config.mutationRate, 
                         config.vertexMovement, 
                         config.colorModificationRate, 
+                        config.copyColorNeighborRate,
                         config.nbVertex, 
                         nbColors, 
                         msg.renderingWidth, 
@@ -335,6 +407,7 @@ self.addEventListener("message", e => {
                         config.mutationRate, 
                         config.vertexMovement, 
                         config.colorModificationRate, 
+                        config.copyColorNeighborRate,
                         config.nbVertex, 
                         nbColors, 
                         msg.renderingWidth, 

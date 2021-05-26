@@ -53,6 +53,7 @@ function MyApp() {
     crossoverStrategy: "polygon",
     vertexMovement: 0.15,
     colorModificationRate: 0.1,
+    copyColorNeighborRate: 0.01,
     enableSsim: true,
     enablePixelDiff: false,
     enableSubDiff: false,
@@ -283,6 +284,7 @@ function MyApp() {
                 crossoverStrategy={configuration.crossoverStrategy}
                 vertexMovement={configuration.vertexMovement}
                 colorModificationRate={configuration.colorModificationRate}
+                copyColorNeighborRate={configuration.copyColorNeighborRate}
                 enableSsim={configuration.enableSsim}
                 enablePixelDiff={configuration.enablePixelDiff}
                 enableSubDiff={configuration.enableSubDiff}
@@ -314,6 +316,7 @@ function MyApp() {
           crossoverStrategy={configuration.crossoverStrategy}
           vertexMovement={configuration.vertexMovement}
           colorModificationRate={configuration.colorModificationRate}
+          copyColorNeighborRate={configuration.copyColorNeighborRate}
           enableSsim={configuration.enableSsim}
           enablePixelDiff={configuration.enablePixelDiff}
           enableSubDiff={configuration.enableSubDiff}

@@ -13,6 +13,7 @@ export interface InputRangeProps {
     crossoverStrategy: string;
     vertexMovement: number;
     colorModificationRate: number;
+    copyColorNeighborRate: number;
     enableSsim: boolean;
     enablePixelDiff: boolean;
     enableSubDiff: boolean;
@@ -38,6 +39,7 @@ export function GAConfigurationInfo({
     crossoverStrategy,
     vertexMovement,
     colorModificationRate,
+    copyColorNeighborRate,
     enableSsim,
     enablePixelDiff,
     enableSubDiff,
@@ -109,6 +111,7 @@ export function GAConfigurationInfo({
                 </Thead>
                 <Tbody>    
                 <Tr><Td>Mutation rate :</Td><Td isNumeric>{mutationRate * 100}%</Td></Tr>
+                <Tr><Td>Copy neighbor color rate :</Td><Td isNumeric>{copyColorNeighborRate * 100}%</Td></Tr>                
                 <Tr><Td>Vertex movement during mutation :</Td><Td isNumeric>{vertexMovement * 100}%</Td></Tr>
                 <Tr><Td>Color movement during mutation :</Td><Td isNumeric>{colorModificationRate * 100}%</Td></Tr>
                 </Tbody>

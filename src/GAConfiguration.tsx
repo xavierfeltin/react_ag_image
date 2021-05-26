@@ -16,6 +16,7 @@ export interface InputRangeProps {
     crossoverStrategy: string;
     vertexMovement: number;
     colorModificationRate: number;
+    copyColorNeighborRate: number;
     enableSsim: boolean;
     enablePixelDiff: boolean;
     enableSubDiff: boolean;
@@ -42,6 +43,7 @@ export function GAConfiguration({
     crossoverStrategy,
     vertexMovement,
     colorModificationRate,
+    copyColorNeighborRate,
     enableSsim,
     enablePixelDiff,
     enableSubDiff,
@@ -66,6 +68,7 @@ export function GAConfiguration({
             crossoverStrategy: crossoverStrategy,
             vertexMovement: vertexMovement,
             colorModificationRate: colorModificationRate,
+            copyColorNeighborRate: copyColorNeighborRate,
             enableSsim: enableSsim,
             enablePixelDiff: enablePixelDiff,
             enableSubDiff: enableSubDiff,
@@ -143,8 +146,9 @@ export function GAConfiguration({
                 <InputRange id="ga-mutation" name="ga-mutation" label="Mutation rate" min={0} max={1} defaultVal={values.mutationRate} step={0.01} onChange={v => setValues({...values, mutationRate: v})}/>
                 <InputRange id="ga-vertex-movement" name="ga-vertex-movement" label="Vertex movement" min={0} max={0.5} defaultVal={values.vertexMovement} step={0.01} onChange={v => setValues({...values, vertexMovement: v})}/>
                 <InputRange id="ga-color-modification" name="ga-color-modification" label="Color modification" min={0} max={1} defaultVal={values.colorModificationRate} step={0.01} onChange={v => setValues({...values, colorModificationRate: v})}/>
+                <InputRange id="ga-color-copy" name="ga-color-copy" label="Copy neighbor color" min={0} max={1} defaultVal={values.copyColorNeighborRate} step={0.01} onChange={v => setValues({...values, copyColorNeighborRate: v})}/>
             </div>
-
+            
             <div>
                 <Heading as="h4" size="sm">Image rendering</Heading>
                 <InputRange id="ga-resolution" name="ga-resolution" label="resolution" min={32} max={256} defaultVal={values.resolution} step={32} onChange={v => setValues({...values, resolution: v})}/>
