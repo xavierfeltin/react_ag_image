@@ -9,6 +9,19 @@ The website is available at [https://xavierfeltin.github.io/react_ag_image/](htt
 
 ## Global approach
 
+First of all, a little remainder on genetic algorithms: [https://towardsdatascience.com/introduction-to-optimization-with-genetic-algorithm-2f5001d9964b](https://towardsdatascience.com/introduction-to-optimization-with-genetic-algorithm-2f5001d9964b)
+
+For this subject, I needed to know if it has been aleady the playgrounds to other people and potentially a research field. Of course, it has been.
+And it looked pretty trickery. Especially all the image comparison mathematics.
+
+Since the main purpose was to discover React, I left the mathematics to external libraries which have already done the work and way better that I could have handled.
+From anoter reference, I found a pretty straightforward approach by summing (and averaging) the pixels difference between the original and the computed image.
+
+So I went with :
+- Ssim library
+- Pixel diff library
+- The direct approach of summing the differences
+
 ## Fitness function
 
 ## Helpful references
