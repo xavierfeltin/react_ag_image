@@ -27,15 +27,28 @@ The application is articulated around three points:
   - The image drawn from the polygons of the best individual
   - The simulation information (score, time of processing, ...)
 
+All the parameters used in the genetic algorithm are available on the configuration:
+- population size
+- crossover strategy
+- mutation strategy
+- enabling the transparancy for drawing
+- number of vertex for the polygons
+- ...
+
 ## Fitness function
 Here are the three different way to compute the similarity between two images used in this project :
 - [Ssim library](https://github.com/obartra/ssim): it computes a score based on the structural similarity of the images.
 - [Pixelmatch library](https://github.com/mapbox/pixelmatch): it computes a score based on the difference of color metrics between two images 
-- The direct approach of summing the differences between each pixel of the images. (inspired from [https://chriscummins.cc/s/genetics/](https://chriscummins.cc/s/genetics/)
+- The direct approach of summing the differences between each pixel of the images. (inspired from [https://chriscummins.cc/s/genetics/](https://chriscummins.cc/s/genetics/))
 
 It is possible to enable one or several of them to compute a  global fitness. The final fitness is a ponderated sum of each approach.
 
-## Helpful references
-
 ## React
+The UI is developped using React for a self study purpose.
+It is using the [Chakra component library](https://chakra-ui.com) as well. It was helpful to speed up some UI developments and it was a good occasion for using a React component library at the same time.
 
+The project helped me to dive into some of React mechanisms and understand its basics. The integration of a web worker and its synchronization with the rest of the application was a bit of a challenge.
+
+The integration of Canvas and image rendering was a bit more complicated than I thought since it was slightly different from what I have done on other projects where Canvas was only used for rendering.
+
+Thanks to [Ganlhi](https://github.com/ganlhi) for his directions and help on React.
