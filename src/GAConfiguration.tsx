@@ -2,7 +2,7 @@ import './GAConfiguration.css';
 import { useEffect, useState } from "react";
 import { Configuration } from "./common/ga";
 import { InputRange } from "./InputRange"
-import { Switch, Heading, VStack } from "@chakra-ui/react"
+import { Switch, Heading, VStack, Tooltip } from "@chakra-ui/react"
 
 export interface InputRangeProps {
     population: number;
@@ -90,13 +90,14 @@ export function GAConfiguration({
             <VStack spacing={6}>
             <div>
                 <Heading as="h4" size="sm">General</Heading>
-                <InputRange id="ga-population" name="ga-population" label="Population" min={10} max={300} defaultVal={values.population} step={1} onChange={v => setValues({...values, population: v})}/>
-                <InputRange id="ga-keep-previous" name="ga-keep-previous" label="Keep previous individual" min={0} max={1} defaultVal={values.keepPreviousRatio} step={0.01}onChange={v => setValues({...values, keepPreviousRatio: v})}/>
-                <InputRange id="ga-new-individual" name="ga-new-individual" label="Generate new individual" min={0} max={1} defaultVal={values.newIndividualRatio} step={0.01} onChange={v => setValues({...values, newIndividualRatio: v})}/>
+                <InputRange id="ga-population" name="ga-population" label="Population" tooltip="Number of individuals (solutions) evaluated at each generation" min={10} max={300} defaultVal={values.population} step={1} onChange={v => setValues({...values, population: v})}/>
+                <InputRange id="ga-keep-previous" name="ga-keep-previous" label="Keep previous individual" tooltip="Rate when building next generation to incorpore an individual from the previous generation" min={0} max={1} defaultVal={values.keepPreviousRatio} step={0.01}onChange={v => setValues({...values, keepPreviousRatio: v})}/>
+                <InputRange id="ga-new-individual" name="ga-new-individual" label="Generate new individual" tooltip="Rate when building next generation to incorpore a completely new random individual" min={0} max={1} defaultVal={values.newIndividualRatio} step={0.01} onChange={v => setValues({...values, newIndividualRatio: v})}/>
             </div>
 
             <div>
                 <Heading as="h4" size="sm">Crossover</Heading>
+                <Tooltip label="The selection strategy to pick parents for generating the children of the next generation" placement="top" closeOnClick={false} bg="blue.50" color="black">
                 <div className="gaconfiguration-wrapper">
                     <label className="gaconfiguration-one">Type: </label> <br/>
                     <div className="gaconfiguration-two">
@@ -109,16 +110,18 @@ export function GAConfiguration({
                         </label>
                     </div>
                 </div>
+                </Tooltip>
             
                 {values.parentSelectionStrategy === "tournament" &&
-                    <InputRange id="ga-selection-cutoff" name="ga-selection-cutoff" label="Selection cutoff" min={0} max={1} defaultVal={values.selectCutoff} step={0.05} onChange={v => setValues({...values, selectCutoff: v})}/>                
+                    <InputRange id="ga-selection-cutoff" name="ga-selection-cutoff" label="Selection cutoff" tooltip="Quantity of the population to be considered for creating the tournament pool" min={0} max={1} defaultVal={values.selectCutoff} step={0.05} onChange={v => setValues({...values, selectCutoff: v})}/>                
                 }
 
                 {values.parentSelectionStrategy === "tournament" &&
-                    <InputRange id="ga-tournament-size" name="ga-tournament-size" label="Tournament size" min={1} max={Math.round(values.selectCutoff * values.population)} defaultVal={values.tournamentSize} step={1} onChange={v => setValues({...values, tournamentSize: v})}/>
+                    <InputRange id="ga-tournament-size" name="ga-tournament-size" label="Tournament size" tooltip="Number of participants from the pool to participate in each tournament" min={1} max={Math.round(values.selectCutoff * values.population)} defaultVal={values.tournamentSize} step={1} onChange={v => setValues({...values, tournamentSize: v})}/>
                 }
 
-                <InputRange id="ga-crossover-parent" name="ga-crossover-parent" label="Main parent ratio" min={0} max={1} defaultVal={values.crossoverParentRatio} step={0.05} onChange={v => setValues({...values, crossoverParentRatio: v})}/>
+                <InputRange id="ga-crossover-parent" name="ga-crossover-parent" label="Main parent ratio" tooltip="Quantity of genes to keep from the parent with the highest fitness" min={0} max={1} defaultVal={values.crossoverParentRatio} step={0.05} onChange={v => setValues({...values, crossoverParentRatio: v})}/>
+                <Tooltip label="The granularity used for the crossover of the two parents" placement="top" closeOnClick={false} bg="blue.50" color="black">
                 <div className="gaconfiguration-wrapper">
                     <label className="gaconfiguration-one">Granularity: </label> <br/>
                     <div className="gaconfiguration-two">
@@ -139,48 +142,57 @@ export function GAConfiguration({
                         </label>
                     </div>
                 </div>
+                </Tooltip>
             </div>
             
             <div>
                 <Heading as="h4" size="sm">Mutation</Heading>
-                <InputRange id="ga-mutation" name="ga-mutation" label="Mutation rate" min={0} max={1} defaultVal={values.mutationRate} step={0.01} onChange={v => setValues({...values, mutationRate: v})}/>
-                <InputRange id="ga-vertex-movement" name="ga-vertex-movement" label="Vertex movement" min={0} max={0.5} defaultVal={values.vertexMovement} step={0.01} onChange={v => setValues({...values, vertexMovement: v})}/>
-                <InputRange id="ga-color-modification" name="ga-color-modification" label="Color modification" min={0} max={1} defaultVal={values.colorModificationRate} step={0.01} onChange={v => setValues({...values, colorModificationRate: v})}/>
-                <InputRange id="ga-color-copy" name="ga-color-copy" label="Copy neighbor color" min={0} max={1} defaultVal={values.copyColorNeighborRate} step={0.01} onChange={v => setValues({...values, copyColorNeighborRate: v})}/>
+                <InputRange id="ga-mutation" name="ga-mutation" label="Mutation rate" tooltip="Rate of mutation applied to each gene of an individual" min={0} max={1} defaultVal={values.mutationRate} step={0.01} onChange={v => setValues({...values, mutationRate: v})}/>
+                <InputRange id="ga-vertex-movement" name="ga-vertex-movement" label="Vertex movement" tooltip="Maximum pourcentage of the image resolution to use as range for moving a vertex during mutation" min={0} max={0.5} defaultVal={values.vertexMovement} step={0.01} onChange={v => setValues({...values, vertexMovement: v})}/>
+                <InputRange id="ga-color-modification" name="ga-color-modification" label="Color modification" tooltip="Maximum pourcentage for changing a color component during mutation" min={0} max={1} defaultVal={values.colorModificationRate} step={0.01} onChange={v => setValues({...values, colorModificationRate: v})}/>
+                <InputRange id="ga-color-copy" name="ga-color-copy" label="Copy neighbor color" min={0} max={1} tooltip="Rate when mutating color to get the color from the closest neighbor than changing the value by a percentage" defaultVal={values.copyColorNeighborRate} step={0.01} onChange={v => setValues({...values, copyColorNeighborRate: v})}/>
             </div>
             
             <div>
                 <Heading as="h4" size="sm">Image rendering</Heading>
-                <InputRange id="ga-resolution" name="ga-resolution" label="resolution" min={32} max={256} defaultVal={values.resolution} step={32} onChange={v => setValues({...values, resolution: v})}/>
+                <InputRange id="ga-resolution" name="ga-resolution" label="resolution" tooltip="Resolution used for the original image during simulation (less for faster computing but less rendering quality)" min={32} max={256} defaultVal={values.resolution} step={32} onChange={v => setValues({...values, resolution: v})}/>
+                <Tooltip label="Enable the Ssim fitness function (help to build the image's structure)" placement="top" closeOnClick={false} bg="blue.50" color="black">
                 <div>
                     <label htmlFor="ga-ssim">SSIM:</label>
                     <Switch className="ga-chakra-switch" id="ga-ssim" value="ssim" isChecked={values.enableSsim} onChange={v =>{setValues({...values, enableSsim: v.target.checked})}}/>
                 </div>
+                </Tooltip>
+                <Tooltip label="Enable the Pixelmatch fitness function (help to fit the colors, consider as well other image's attributes)" placement="top" closeOnClick={false} bg="blue.50" color="black">
                 <div>            
                     <label htmlFor="ga-pixeldiff">Pixel differenciation:</label>
                     <Switch className="ga-chakra-switch" id="ga-pixeldiff" value="pixeldiff" isChecked={values.enablePixelDiff} onChange={v => setValues({...values, enablePixelDiff: v.target.checked})}/>
                 </div>
+                </Tooltip>
+                <Tooltip label="Enable the average difference between pixels fitness function (help to fit the colors)" placement="top" closeOnClick={false} bg="blue.50" color="black">
                 <div>            
                     <label htmlFor="ga-subdiff">Pixel substraction:</label>
                     <Switch className="ga-chakra-switch" id="ga-subdiff" value="subdiff" isChecked={values.enableSubDiff} onChange={v => setValues({...values, enableSubDiff: v.target.checked})}/>
                 </div>
+                </Tooltip>
                 {values.enableSsim &&
-                    <InputRange id="ga-ssim-ratio" name="ga-ssim-ratio" label="Ratio Ssim" min={0} max={10} defaultVal={values.ratioSsim} step={1} onChange={v => setValues({...values, ratioSsim: v})}/>
+                    <InputRange id="ga-ssim-ratio" name="ga-ssim-ratio" label="Ratio Ssim" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioSsim} step={1} onChange={v => setValues({...values, ratioSsim: v})}/>
                 }
                 {values.enablePixelDiff && 
-                    <InputRange id="ga-pixldiff-ratio" name="ga-pixldiff-ration" label="Ratio Pixel diff" min={0} max={10} defaultVal={values.ratioPixelDiff} step={1} onChange={v => setValues({...values, ratioPixelDiff: v})}/>
+                    <InputRange id="ga-pixldiff-ratio" name="ga-pixldiff-ration" label="Ratio Pixelmatch" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioPixelDiff} step={1} onChange={v => setValues({...values, ratioPixelDiff: v})}/>
                 }
                 {values.enableSubDiff &&
-                    <InputRange id="ga-subdiff-ratio" name="ga-subdiff-ration" label="Ratio Sub diff" min={0} max={10} defaultVal={values.ratioSubDiff} step={1} onChange={v => setValues({...values, ratioSubDiff: v})}/>            
+                    <InputRange id="ga-subdiff-ratio" name="ga-subdiff-ration" label="Ratio Sub diff" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioSubDiff} step={1} onChange={v => setValues({...values, ratioSubDiff: v})}/>            
                 }
             
+               <Tooltip label="Enable the transparency when drawing the polygons" placement="top" closeOnClick={false} bg="blue.50" color="black">
                 <div>   
                     <label htmlFor="ga-transparency">Transparency:</label>
                     <Switch className="ga-chakra-switch" id="ga-transparency" value="transparency" isChecked={values.enableTransparency} onChange={v => setValues({...values, enableTransparency: v.target.checked})}/>
                 </div>
+                </Tooltip>
 
-                <InputRange id="ga-vertex" name="ga-vertex" label="Vertex" min={3} max={10} defaultVal={values.nbVertex} step={1} onChange={v => setValues({...values, nbVertex: v})}/>
-                <InputRange id="ga-vertices" name="ga-vertices" label="Vertices" min={50} max={500} defaultVal={values.nbPolygons} step={1} onChange={v => setValues({...values, nbPolygons: v})}/>
+                <InputRange id="ga-vertex" name="ga-vertex" label="Vertex" tooltip="Number of vertex for the polygons used for the drawing (3 is a triangle)" min={3} max={10} defaultVal={values.nbVertex} step={1} onChange={v => setValues({...values, nbVertex: v})}/>
+                <InputRange id="ga-vertices" name="ga-vertices" label="Vertices" tooltip="Number of polygons used for the drawing (this number is fixed during the evolution)" min={50} max={500} defaultVal={values.nbPolygons} step={1} onChange={v => setValues({...values, nbPolygons: v})}/>
             </div>
             </VStack>
         </div>

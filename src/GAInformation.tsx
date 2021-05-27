@@ -25,7 +25,7 @@ export function GAInformation({ generation, fitness, ssim, pixelDiff, subPixel, 
             <Tr><Td>Time by generation:</Td><Td isNumeric>{elapsedTimeForGeneration} seconds</Td></Tr>
             <Tr><Td>Global fitness:</Td><Td isNumeric>{(fitness * 100.0).toFixed(2)}%</Td></Tr>
             <Tr><Td>Ssim fitness:</Td><Td isNumeric>{(ssim * 100.0).toFixed(2)}%</Td></Tr>
-            <Tr><Td>Pixel Diff fitness:</Td><Td isNumeric>{(pixelDiff * 100.0).toFixed(2)}%</Td></Tr>
+            <Tr><Td>Pixelmatch fitness:</Td><Td isNumeric>{(pixelDiff * 100.0).toFixed(2)}%</Td></Tr>
             <Tr><Td>Sub Pixel fitness:</Td><Td isNumeric>{(subPixel * 100.0).toFixed(2)}%</Td></Tr>
             <Tr><Td>Best indivudial:</Td><Td isNumeric>{idBest}</Td></Tr>
             </Tbody>
