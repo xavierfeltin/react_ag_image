@@ -97,11 +97,11 @@ export function GAConfiguration({
 
             <div>
                 <Heading as="h4" size="sm">Crossover</Heading>
-                <Tooltip label="The selection strategy to pick parents for generating the children of the next generation" placement="top" closeOnClick={false} bg="blue.50" color="black">
+                <Tooltip label="The selection strategy to pick parents for generating the children of the next generation" placement="top" closeOnClick={false} bg="blue.50" color="black" offset={[0, -10]}>
                 <div className="gaconfiguration-wrapper">
                     <label className="gaconfiguration-one">Type: </label> <br/>
                     <div className="gaconfiguration-two">
-                        <label className="ga-strategy-label" htmlFor="strategy-tournament">Tournament <br/>
+                        <label className="ga-strategy-label" htmlFor="strategy-tournament">Tournament <br/> 
                             <input type="radio" id="strategy-tournament" name="parentstrategy" value="tournament" checked={values.parentSelectionStrategy === "tournament"} onChange={v =>{setValues({...values, parentSelectionStrategy: v.target.value})}}/>
                         </label> 
 
@@ -121,7 +121,7 @@ export function GAConfiguration({
                 }
 
                 <InputRange id="ga-crossover-parent" name="ga-crossover-parent" label="Main parent ratio" tooltip="Quantity of genes to keep from the parent with the highest fitness" min={0} max={1} defaultVal={values.crossoverParentRatio} step={0.05} onChange={v => setValues({...values, crossoverParentRatio: v})}/>
-                <Tooltip label="The granularity used for the crossover of the two parents" placement="top" closeOnClick={false} bg="blue.50" color="black">
+                <Tooltip label="The granularity used for the crossover of the two parents" placement="top" closeOnClick={false} bg="blue.50" color="black" offset={[0, -20]}>
                 <div className="gaconfiguration-wrapper">
                     <label className="gaconfiguration-one">Granularity: </label> <br/>
                     <div className="gaconfiguration-two">
@@ -156,19 +156,19 @@ export function GAConfiguration({
             <div>
                 <Heading as="h4" size="sm">Image rendering</Heading>
                 <InputRange id="ga-resolution" name="ga-resolution" label="resolution" tooltip="Resolution used for the original image during simulation (less for faster computing but less rendering quality)" min={32} max={256} defaultVal={values.resolution} step={32} onChange={v => setValues({...values, resolution: v})}/>
-                <Tooltip label="Enable the Ssim fitness function (help to build the image's structure)" placement="top" closeOnClick={false} bg="blue.50" color="black">
+                <Tooltip label="Enable the Ssim fitness function (help to build the image's structure)" placement="top" closeOnClick={false} bg="blue.50" color="black" offset={[0, -20]}>
                 <div>
                     <label htmlFor="ga-ssim">SSIM:</label>
                     <Switch className="ga-chakra-switch" id="ga-ssim" value="ssim" isChecked={values.enableSsim} onChange={v =>{setValues({...values, enableSsim: v.target.checked})}}/>
                 </div>
                 </Tooltip>
-                <Tooltip label="Enable the Pixelmatch fitness function (help to fit the colors, consider as well other image's attributes)" placement="top" closeOnClick={false} bg="blue.50" color="black">
+                <Tooltip label="Enable the Pixelmatch fitness function (help to fit the colors, consider as well other image's attributes)" placement="top" closeOnClick={false} bg="blue.50" color="black" offset={[0, -20]}>
                 <div>            
                     <label htmlFor="ga-pixeldiff">Pixel differenciation:</label>
                     <Switch className="ga-chakra-switch" id="ga-pixeldiff" value="pixeldiff" isChecked={values.enablePixelDiff} onChange={v => setValues({...values, enablePixelDiff: v.target.checked})}/>
                 </div>
                 </Tooltip>
-                <Tooltip label="Enable the average difference between pixels fitness function (help to fit the colors)" placement="top" closeOnClick={false} bg="blue.50" color="black">
+                <Tooltip label="Enable the average difference between pixels fitness function (help to fit the colors)" placement="top" closeOnClick={false} bg="blue.50" color="black" offset={[0, -20]}>
                 <div>            
                     <label htmlFor="ga-subdiff">Pixel substraction:</label>
                     <Switch className="ga-chakra-switch" id="ga-subdiff" value="subdiff" isChecked={values.enableSubDiff} onChange={v => setValues({...values, enableSubDiff: v.target.checked})}/>
@@ -184,7 +184,7 @@ export function GAConfiguration({
                     <InputRange id="ga-subdiff-ratio" name="ga-subdiff-ration" label="Ratio Sub diff" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioSubDiff} step={1} onChange={v => setValues({...values, ratioSubDiff: v})}/>            
                 }
             
-               <Tooltip label="Enable the transparency when drawing the polygons" placement="top" closeOnClick={false} bg="blue.50" color="black">
+               <Tooltip label="Enable the transparency when drawing the polygons" placement="top" closeOnClick={false} bg="blue.50" color="black" offset={[0, -20]}>
                 <div>   
                     <label htmlFor="ga-transparency">Transparency:</label>
                     <Switch className="ga-chakra-switch" id="ga-transparency" value="transparency" isChecked={values.enableTransparency} onChange={v => setValues({...values, enableTransparency: v.target.checked})}/>

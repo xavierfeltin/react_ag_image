@@ -24,7 +24,7 @@ export function InputRange({defaultVal, min, max, step, label, id, name, tooltip
     }
 
     return (
-        <Tooltip label={tooltip} placement="top" closeOnClick={false} bg="blue.50" color="black">
+        <Tooltip label={tooltip} placement="top" closeOnClick={false} bg="blue.50" color="black" offset={[0, -20]}>
         <div className="inputrange-wrapper">           
             <label className="inputrange-one">{label}</label>    
             <input className="inputrange-two" type="range" id={id} name={name} min={min} max={max} step={step} value={value} onChange={handleOnChange}/>
