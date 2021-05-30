@@ -6,6 +6,7 @@ export interface Individual {
     ssim: number;
     pixelDiff: number;
     subPixel: number;
+    polygon: number;
     diff: ImageData | undefined;
     probability: number;
     id: number
@@ -17,6 +18,7 @@ export interface Result {
     ssim: number;
     pixelDiff: number;
     subPixel: number;
+    polygon: number;
     diff: ImageData | undefined;
 }
 
@@ -32,13 +34,17 @@ export interface Configuration {
     crossoverStrategy: string;
     vertexMovement: number;
     colorModificationRate: number;
-    copyColorNeighborRate: number;
+    copyColorNeighborRate: number;  
+    addPolygonRate: number;
+    removePolygonRate: number;  
     enableSsim: boolean;
     enablePixelDiff: boolean;
     enableSubDiff: boolean,
+    enableVariablePolygons: boolean;
     ratioSsim: number;
     ratioPixelDiff: number;
     ratioSubDiff: number;
+    ratioPolygons: number;
     enableTransparency: boolean;
     nbVertex: number;
     nbPolygons: number;
@@ -54,6 +60,7 @@ export function createEmptyIndividual(): Individual {
         ssim: 0,
         pixelDiff: 0,
         subPixel: 0,
+        polygon: 0,
         diff: undefined,
         probability: 0,
         phenotype: []
@@ -62,30 +69,41 @@ export function createEmptyIndividual(): Individual {
     return ind;
 }
 
-export function createIndividual(nbPolygons: number, nbVertices: number, nbColor: number, width: number, height: number): Individual {
-    const genes: number[] = [];
+export function createPolygon(nbVertices: number, nbColor: number, width: number, height: number): number[] {
+    const polygon: number [] = [];
+
     const rangeW = width / 2;
     const rangeH = height / 2;
+    const x = randomNumberInRange(0, width, true);
+    const y = randomNumberInRange(0, height, true);
 
-    for (let i = 0; i < nbPolygons; i++) {    
-        const x = randomNumberInRange(0, width, true);
-        const y = randomNumberInRange(0, height, true);
+    for (let j = 0; j < nbVertices; j++) {        
+        let newX = x + randomNumberInRange(-rangeW, rangeW, true); 
+        newX = Math.max(0, Math.min(newX, width));    
 
-        for (let j = 0; j < nbVertices; j++) {        
-            let newX = x + randomNumberInRange(-rangeW, rangeW, true); 
-            newX = Math.max(0, Math.min(newX, width));    
+        let newY = y + randomNumberInRange(-rangeH, rangeH, true); 
+        newY = Math.max(0, Math.min(newY, height));
 
-            let newY = y + randomNumberInRange(-rangeH, rangeH, true); 
-            newY = Math.max(0, Math.min(newY, height));
+        polygon.push(newX);
+        polygon.push(newY);
+    }
 
-            genes.push(newX);
-            genes.push(newY);
-        }
+    for (let j = 0; j < nbColor; j++) {
+        const c = j < 3 ? randomNumberInRange(0, 256, true) : randomNumberInRange(0.2, 1, false);
+        polygon.push(c); 
+    }  
 
-        for (let j = 0; j < nbColor; j++) {
-            const c = j < 3 ? randomNumberInRange(0, 256, true) : randomNumberInRange(0.2, 1, false);
-            genes.push(c); 
-        }        
+    return polygon;
+}
+
+export function createIndividual(nbPolygons: number, nbVertices: number, nbColor: number, width: number, height: number): Individual {
+    let genes: number[] = [];
+    // const rangeW = width / 2;
+    // const rangeH = height / 2;
+
+    for (let i = 0; i < nbPolygons; i++) {   
+        const polygon = createPolygon(nbVertices, nbColor, width, height); 
+        genes = genes.concat(polygon);      
     }
    
     const ind: Individual = {
@@ -95,11 +113,11 @@ export function createIndividual(nbPolygons: number, nbVertices: number, nbColor
         ssim: 0,
         pixelDiff: 0,
         subPixel: 0,
+        polygon: 0,
         diff: undefined,
         probability: 0,
         phenotype: []
     }
-
     return ind;
 }
 
@@ -127,7 +145,7 @@ export function randomNumberInRange(min: number, max: number, isInteger: boolean
 }
 
 export function buildPhenotypeFromGenes(genes: number[], nbVertices: number, nbColor: number):  Polygon[] {
-    const phenotype: Polygon[] = [];
+    let phenotype: Polygon[] = [];
 
     const polygonSize = nbVertices * 2 + nbColor;
     for (let i = 0; i < genes.length; i = i+polygonSize) {
@@ -150,6 +168,7 @@ export function buildPhenotypeFromGenes(genes: number[], nbVertices: number, nbC
         }
         phenotype.push(p);
     }
+
     return phenotype;
 }
 
@@ -248,6 +267,7 @@ function crossOverSinglePoint(a: Individual, b: Individual, parentRatio: number,
         ssim: 0,
         pixelDiff: 0,
         subPixel: 0,
+        polygon: 0,
         diff: undefined,
         probability: 0,
         id: Date.now(),
@@ -255,14 +275,27 @@ function crossOverSinglePoint(a: Individual, b: Individual, parentRatio: number,
     };
 
     const polygonSize = (nbVertices * 2 + nbColor);
-    const nbPolygons = nbVertices / polygonSize;
-    const splitIndex = Math.floor(nbPolygons * parentRatio) * polygonSize;
     const primaryGenes = a.fitness > b.fitness ? a.genes : b.genes;
-    const secdondatyGenes = a.fitness > b.fitness ? b.genes : a.genes;
+    const secondaryGenes = a.fitness > b.fitness ? b.genes : a.genes;    
+    const splitIndex = Math.floor(primaryGenes.length * parentRatio) * polygonSize;
 
-    child.genes = child.genes.concat(primaryGenes.slice(0, splitIndex));
-    child.genes = child.genes.concat(secdondatyGenes.slice(splitIndex));
+    if (a.genes.length == b.genes.length) {
+        child.genes = child.genes.concat(primaryGenes.slice(0, splitIndex));
+        child.genes = child.genes.concat(secondaryGenes.slice(splitIndex));    
+    }
+    else {
+        child.genes = child.genes.concat(primaryGenes.slice(0, splitIndex));
+        const remainsToCoopy = primaryGenes.length - splitIndex;
 
+        if (remainsToCoopy > secondaryGenes.length) {
+            child.genes = child.genes.concat(secondaryGenes);
+            child.genes = child.genes.concat(primaryGenes.slice(splitIndex, primaryGenes.length - secondaryGenes.length));
+        }
+        else {
+            child.genes = child.genes.concat(secondaryGenes.slice(secondaryGenes.length - remainsToCoopy));  
+        }
+    }
+    
     return child;
 }
 
@@ -274,6 +307,7 @@ export function crossOverPolygon(a: Individual, b: Individual, parentRatio: numb
         ssim: 0,
         pixelDiff: 0,
         subPixel: 0,
+        polygon: 0,
         diff: undefined,
         probability: 0,
         id: Date.now(),
@@ -283,10 +317,21 @@ export function crossOverPolygon(a: Individual, b: Individual, parentRatio: numb
     let probaToPickFromA = (a.fitness > b.fitness) ? parentRatio : 1 - parentRatio;
    
     let i = 0;
-    while (i < a.genes.length) {
-        const polygonSize = (nbVertices * 2 + nbColor);
-        let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
-        child.genes = child.genes.concat(genes.slice(i, i + polygonSize));
+    let childGeneSize = a.fitness > b.fitness ? a.genes.length : b.genes.length;
+    const polygonSize = (nbVertices * 2 + nbColor);
+    while (i < childGeneSize) {        
+        if (Math.random() < probaToPickFromA && i < a.genes.length) {
+            // Pick from A and A still have polygons to read
+            child.genes = child.genes.concat(a.genes.slice(i, i + polygonSize));
+        }
+        else if (i < b.genes.length) {
+            // Pick from B because of proba or if A does not have anymore polygon to read
+            child.genes = child.genes.concat(b.genes.slice(i, i + polygonSize));
+        }
+        else {
+            // Pick from A if B does not have anymore polygon to read
+            child.genes = child.genes.concat(a.genes.slice(i, i + polygonSize));
+        }
         i += polygonSize;
     }
 
@@ -301,6 +346,7 @@ export function crossOverVertex(a: Individual, b: Individual, parentRatio: numbe
         ssim: 0,
         pixelDiff: 0,
         subPixel: 0,
+        polygon: 0,
         diff: undefined,
         probability: 0,
         id: Date.now(),
@@ -315,7 +361,20 @@ export function crossOverVertex(a: Individual, b: Individual, parentRatio: numbe
         const isVertex = relativeIndex < (nbVertices * 2);
         if (isVertex) {
             // Copy vertex
-            let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
+            let genes: number[];
+            if (Math.random() < probaToPickFromA && i < a.genes.length) {
+                // Pick from A and A still have data to read
+                genes = a.genes;
+            }
+            else if (i < b.genes.length) {
+                // Pick from B because of proba or if A does not have anymore data to read
+                genes = b.genes;
+            }
+            else {
+                // Pick from A if B does not have anymore data to read
+                genes = a.genes;
+            }
+
             let v: Vertex = {
                 x: genes[i],
                 y: genes[i + 1]
@@ -327,7 +386,20 @@ export function crossOverVertex(a: Individual, b: Individual, parentRatio: numbe
         }
         else {
             // Copy color
-            let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
+            let genes: number[];
+            if (Math.random() < probaToPickFromA && i < a.genes.length - nbColor) {
+                // Pick from A and A still have data to read
+                genes = a.genes;
+            }
+            else if (i < b.genes.length - nbColor) {
+                // Pick from B because of proba or if A does not have anymore data to read
+                genes = b.genes;
+            }
+            else {
+                // Pick from A if B does not have anymore data to read
+                genes = a.genes;
+            }
+
             child.genes.push(genes[i]);
             child.genes.push(genes[i+1]);
             child.genes.push(genes[i+2]);
@@ -352,6 +424,7 @@ export function crossOverData(a: Individual, b: Individual, parentRatio: number,
         ssim: 0,
         pixelDiff: 0,
         subPixel: 0,
+        polygon: 0,
         diff: undefined,
         probability: 0,
         id: Date.now(),
@@ -361,11 +434,22 @@ export function crossOverData(a: Individual, b: Individual, parentRatio: number,
     let probaToPickFromA = (a.fitness > b.fitness) ? parentRatio : 1 - parentRatio;
 
     let i = 0;
-    while (i < a.genes.length) {        
-        let genes = Math.random() < probaToPickFromA ? a.genes : b.genes;
-        child.genes.push(genes[i]);
+    let childGeneSize = a.fitness > b.fitness ? a.genes.length : b.genes.length;
+    while (i < childGeneSize) {        
+        if (Math.random() < probaToPickFromA && i < a.genes.length) {
+            // Pick from A and A still have data to read
+            child.genes.push(a.genes[i]);
+        }
+        else if (i < b.genes.length) {
+            // Pick from B because of proba or if A does not have anymore data to read
+            child.genes.push(b.genes[i]);
+        }
+        else {
+            // Pick from A if B does not have anymore data to read
+            child.genes.push(a.genes[i]);
+        }
         i++;
     }
-
+    
     return child;
 }

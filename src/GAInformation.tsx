@@ -6,13 +6,15 @@ export interface GAInfoProps {
     ssim: number;
     pixelDiff: number;
     subPixel: number;
+    polygon: number;
     idBest: number;
     elapsedTimeForGeneration: number;
     notImprovingSince: number;
+    nbPolygons: number;
     className: string;
 };
 
-export function GAInformation({ generation, fitness, ssim, pixelDiff, subPixel, idBest, elapsedTimeForGeneration, notImprovingSince, className }: GAInfoProps) {
+export function GAInformation({ generation, fitness, ssim, pixelDiff, subPixel, polygon, idBest, elapsedTimeForGeneration, notImprovingSince, nbPolygons, className }: GAInfoProps) {
     return (
         <div className={className}>
           <Table variant="striped">
@@ -27,7 +29,9 @@ export function GAInformation({ generation, fitness, ssim, pixelDiff, subPixel, 
             <Tr><Td>Ssim fitness:</Td><Td isNumeric>{(ssim * 100.0).toFixed(2)}%</Td></Tr>
             <Tr><Td>Pixelmatch fitness:</Td><Td isNumeric>{(pixelDiff * 100.0).toFixed(2)}%</Td></Tr>
             <Tr><Td>Sub Pixel fitness:</Td><Td isNumeric>{(subPixel * 100.0).toFixed(2)}%</Td></Tr>
+            <Tr><Td>Polygon fitness:</Td><Td isNumeric>{(polygon * 100.0).toFixed(2)}%</Td></Tr>
             <Tr><Td>Best indivudial:</Td><Td isNumeric>{idBest}</Td></Tr>
+            <Tr><Td>Number of polygons:</Td><Td isNumeric>{nbPolygons}</Td></Tr>
             </Tbody>
           </Table>
         </div>

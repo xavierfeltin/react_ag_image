@@ -54,15 +54,19 @@ function MyApp() {
     vertexMovement: 0.15,
     colorModificationRate: 0.1,
     copyColorNeighborRate: 0.01,
+    addPolygonRate: 0.1,
+    removePolygonRate: 0.1,
     enableSsim: true,
     enablePixelDiff: false,
-    enableSubDiff: false,
+    enableSubDiff: false,    
+    enableVariablePolygons: true,
     ratioSsim: 1,
     ratioPixelDiff: 1,
     ratioSubDiff: 1,
+    ratioPolygons: 0.05,
     enableTransparency: true,
     nbVertex: 3,
-    nbPolygons: 125,
+    nbPolygons: 26,
     resolution: 64
   });
 
@@ -74,6 +78,7 @@ function MyApp() {
       ssim: 0,
       pixelDiff: 0,
       subPixel: 0,
+      polygon: 0,
       diff: undefined,
       id: 0,
       probability: 0,
@@ -158,6 +163,7 @@ function MyApp() {
           ssim: 0,
           pixelDiff: 0,
           subPixel: 0,
+          polygon: 0,
           diff: undefined,
           id: 0,
           probability: 0,
@@ -266,9 +272,11 @@ function MyApp() {
                 ssim={simulation.best.ssim}
                 pixelDiff={simulation.best.pixelDiff}
                 subPixel={simulation.best.subPixel}
+                polygon={simulation.best.polygon}
                 idBest={simulation.best.id} 
                 elapsedTimeForGeneration={simulation.elapsedTime}
                 notImprovingSince={simulation.notImprovingSince}
+                nbPolygons={simulation.best.genes.length / 10}
               />
             </TabPanel>
             <TabPanel>
@@ -285,14 +293,18 @@ function MyApp() {
                 vertexMovement={configuration.vertexMovement}
                 colorModificationRate={configuration.colorModificationRate}
                 copyColorNeighborRate={configuration.copyColorNeighborRate}
+                addPolygonRate={configuration.addPolygonRate}
+                removePolygonRate={configuration.removePolygonRate}
                 enableSsim={configuration.enableSsim}
                 enablePixelDiff={configuration.enablePixelDiff}
                 enableSubDiff={configuration.enableSubDiff}
                 ratioSsim={configuration.ratioSsim}
                 ratioPixelDiff={configuration.ratioPixelDiff}
                 ratioSubDiff={configuration.ratioSubDiff}
+                ratioPolygons={configuration.ratioPolygons}
                 enableTransparency={configuration.enableTransparency}
                 nbVertex={configuration.nbVertex}
+                enableVariablePolygons={configuration.enableVariablePolygons}
                 nbPolygons={configuration.nbPolygons}
                 resolution={configuration.resolution}
                 className="" 
@@ -317,12 +329,16 @@ function MyApp() {
           vertexMovement={configuration.vertexMovement}
           colorModificationRate={configuration.colorModificationRate}
           copyColorNeighborRate={configuration.copyColorNeighborRate}
+          addPolygonRate={configuration.addPolygonRate}
+          removePolygonRate={configuration.removePolygonRate}
           enableSsim={configuration.enableSsim}
           enablePixelDiff={configuration.enablePixelDiff}
-          enableSubDiff={configuration.enableSubDiff}
+          enableSubDiff={configuration.enableSubDiff}          
+          enableVariablePolygons={configuration.enableVariablePolygons}
           ratioSsim={configuration.ratioSsim}
           ratioPixelDiff={configuration.ratioPixelDiff}
           ratioSubDiff={configuration.ratioSubDiff}
+          ratioPolygons={configuration.ratioPolygons}
           enableTransparency={configuration.enableTransparency}
           nbVertex={configuration.nbVertex}
           nbPolygons={configuration.nbPolygons}

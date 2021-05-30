@@ -17,14 +17,18 @@ export interface InputRangeProps {
     vertexMovement: number;
     colorModificationRate: number;
     copyColorNeighborRate: number;
+    addPolygonRate: number;
+    removePolygonRate: number;
     enableSsim: boolean;
     enablePixelDiff: boolean;
     enableSubDiff: boolean;
     ratioSsim: number;
     ratioPixelDiff: number;
     ratioSubDiff: number;
+    ratioPolygons: number;
     enableTransparency: boolean;
     nbVertex: number;
+    enableVariablePolygons: boolean;
     nbPolygons: number;
     resolution: number;
     onValuesChange: (configuration: Configuration) => void;
@@ -44,14 +48,18 @@ export function GAConfiguration({
     vertexMovement,
     colorModificationRate,
     copyColorNeighborRate,
+    addPolygonRate,
+    removePolygonRate,
     enableSsim,
     enablePixelDiff,
     enableSubDiff,
     ratioSsim,
     ratioPixelDiff,
     ratioSubDiff,
+    ratioPolygons,
     enableTransparency,
     nbVertex,
+    enableVariablePolygons,
     nbPolygons,
     resolution,
     onValuesChange, className} : InputRangeProps) {
@@ -69,14 +77,18 @@ export function GAConfiguration({
             vertexMovement: vertexMovement,
             colorModificationRate: colorModificationRate,
             copyColorNeighborRate: copyColorNeighborRate,
+            addPolygonRate: addPolygonRate,
+            removePolygonRate: removePolygonRate,
             enableSsim: enableSsim,
             enablePixelDiff: enablePixelDiff,
             enableSubDiff: enableSubDiff,
             ratioSsim: ratioSsim,
             ratioPixelDiff: ratioPixelDiff,
             ratioSubDiff: ratioSubDiff,
+            ratioPolygons: ratioPolygons,
             enableTransparency: enableTransparency,
             nbVertex: nbVertex,
+            enableVariablePolygons,
             nbPolygons: nbPolygons,
             resolution: resolution
         });
@@ -151,6 +163,8 @@ export function GAConfiguration({
                 <InputRange id="ga-vertex-movement" name="ga-vertex-movement" label="Vertex movement" tooltip="Maximum pourcentage of the image resolution to use as range for moving a vertex during mutation" min={0} max={0.5} defaultVal={values.vertexMovement} step={0.01} onChange={v => setValues({...values, vertexMovement: v})}/>
                 <InputRange id="ga-color-modification" name="ga-color-modification" label="Color modification" tooltip="Maximum pourcentage for changing a color component during mutation" min={0} max={1} defaultVal={values.colorModificationRate} step={0.01} onChange={v => setValues({...values, colorModificationRate: v})}/>
                 <InputRange id="ga-color-copy" name="ga-color-copy" label="Copy neighbor color" min={0} max={1} tooltip="Rate when mutating color to get the color from the closest neighbor than changing the value by a percentage" defaultVal={values.copyColorNeighborRate} step={0.01} onChange={v => setValues({...values, copyColorNeighborRate: v})}/>
+                <InputRange id="ga-add-polygon" name="ga-add-polygon" label="Add polygon" min={0} max={1} tooltip="Rate when mutating polygon to insert an additional polygon (variable number of polygons should be enabled) " defaultVal={values.addPolygonRate} step={0.01} onChange={v => setValues({...values, addPolygonRate: v})}/>
+                <InputRange id="ga-remove-polygon" name="ga-remove-polygon" label="Remove polygon" min={0} max={1} tooltip="Rate when mutation polygon to remove the current polygon (variable number of polygons should be enabled)" defaultVal={values.removePolygonRate} step={0.01} onChange={v => setValues({...values, removePolygonRate: v})}/>
             </div>
             
             <div>
@@ -174,14 +188,23 @@ export function GAConfiguration({
                     <Switch className="ga-chakra-switch" id="ga-subdiff" value="subdiff" isChecked={values.enableSubDiff} onChange={v => setValues({...values, enableSubDiff: v.target.checked})}/>
                 </div>
                 </Tooltip>
+                <Tooltip label="Enable the action to add / remove a polygon from an individual" placement="top" closeOnClick={false} bg="blue.50" color="black" offset={[0, -20]}>
+                <div>   
+                    <label htmlFor="ga-enableVariablePolygons">Variable number of polygons:</label>
+                    <Switch className="ga-chakra-switch" id="ga-enableVariablePolygons" value="enableVariablePolygons" isChecked={values.enableVariablePolygons} onChange={v => setValues({...values, enableVariablePolygons: v.target.checked})}/>
+                </div>
+                </Tooltip>
                 {values.enableSsim &&
-                    <InputRange id="ga-ssim-ratio" name="ga-ssim-ratio" label="Ratio Ssim" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioSsim} step={1} onChange={v => setValues({...values, ratioSsim: v})}/>
+                    <InputRange id="ga-ssim-ratio" name="ga-ssim-ratio" label="Ratio Ssim" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioSsim} step={0.1} onChange={v => setValues({...values, ratioSsim: v})}/>
                 }
                 {values.enablePixelDiff && 
-                    <InputRange id="ga-pixldiff-ratio" name="ga-pixldiff-ration" label="Ratio Pixelmatch" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioPixelDiff} step={1} onChange={v => setValues({...values, ratioPixelDiff: v})}/>
+                    <InputRange id="ga-pixldiff-ratio" name="ga-pixldiff-ration" label="Ratio Pixelmatch" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioPixelDiff} step={0.1} onChange={v => setValues({...values, ratioPixelDiff: v})}/>
                 }
                 {values.enableSubDiff &&
-                    <InputRange id="ga-subdiff-ratio" name="ga-subdiff-ration" label="Ratio Sub diff" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioSubDiff} step={1} onChange={v => setValues({...values, ratioSubDiff: v})}/>            
+                    <InputRange id="ga-subdiff-ratio" name="ga-subdiff-ration" label="Ratio Sub diff" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioSubDiff} step={0.1} onChange={v => setValues({...values, ratioSubDiff: v})}/>            
+                }
+                {values.enableVariablePolygons &&
+                    <InputRange id="ga-polygons-ratio" name="ga-polygons-ration" label="Ratio polygons" tooltip="Weight for computing the global fitness" min={0} max={10} defaultVal={values.ratioPolygons} step={0.1} onChange={v => setValues({...values, ratioPolygons: v})}/>            
                 }
             
                <Tooltip label="Enable the transparency when drawing the polygons" placement="top" closeOnClick={false} bg="blue.50" color="black" offset={[0, -20]}>
@@ -192,7 +215,7 @@ export function GAConfiguration({
                 </Tooltip>
 
                 <InputRange id="ga-vertex" name="ga-vertex" label="Vertex" tooltip="Number of vertex for the polygons used for the drawing (3 is a triangle)" min={3} max={10} defaultVal={values.nbVertex} step={1} onChange={v => setValues({...values, nbVertex: v})}/>
-                <InputRange id="ga-vertices" name="ga-vertices" label="Vertices" tooltip="Number of polygons used for the drawing (this number is fixed during the evolution)" min={50} max={500} defaultVal={values.nbPolygons} step={1} onChange={v => setValues({...values, nbPolygons: v})}/>
+                <InputRange id="ga-vertices" name="ga-vertices" label="Vertices" tooltip="Number of polygons used for the drawing (this number is fixed during the evolution)" min={1} max={500} defaultVal={values.nbPolygons} step={1} onChange={v => setValues({...values, nbPolygons: v})}/>
             </div>
             </VStack>
         </div>

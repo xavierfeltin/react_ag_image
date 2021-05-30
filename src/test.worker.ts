@@ -4,13 +4,13 @@ import {drawPolygon, moveVertex, Vertex} from "./common/geometry";
 import {AGworkerIn, AGworkerOut} from "./common/communication";
 import {buildPhenotypeFromGenes, Individual, randomNumberInRange, generateTournamentPool,
     Result, generatePopulation, convertFitnessIntoProbabilities, sortDescByProbability, createIndividual,
-    pickParent, pickParentFromTournament, sortDescByFitness, crossOver} from "./common/ga";
+    pickParent, pickParentFromTournament, sortDescByFitness, crossOver, createPolygon} from "./common/ga";
 import { Context } from "vm";
 
 declare const self: Worker;
 export default {} as typeof Worker & { new (): Worker };
 
-function evaluatePopulation(population: Individual[], enableSsim: boolean, enablePixelDiff: boolean, enableSubDiff: boolean, ratioSsim: number, ratioPixelDiff: number, ratioSubDiff: number, nbVertices: number, nbColor: number, originalImage: ImageData, ctx: Context): Individual[] {
+function evaluatePopulation(population: Individual[], enableSsim: boolean, enablePixelDiff: boolean, enableSubDiff: boolean, enableVariablePolygons: boolean, ratioSsim: number, ratioPixelDiff: number, ratioSubDiff: number, ratioPolygons: number, nbVertices: number, nbColor: number, originalImage: ImageData, ctx: Context): Individual[] {
     if(!ctx) {
         return [...population];
     }
@@ -19,7 +19,7 @@ function evaluatePopulation(population: Individual[], enableSsim: boolean, enabl
     for (let i = 0; i < population.length; i++) {        
         // Draw the image from the genes
         const ind = population[i];
-        const result = evaluate(ind, enableSsim, enablePixelDiff, enableSubDiff, ratioSsim, ratioPixelDiff, ratioSubDiff, nbVertices, nbColor, originalImage, ctx);
+        const result = evaluate(ind, enableSsim, enablePixelDiff, enableSubDiff, enableVariablePolygons, ratioSsim, ratioPixelDiff, ratioSubDiff, ratioPolygons, nbVertices, nbColor, originalImage, ctx);
         
         const evaluatedInd: Individual = {
             genes: [...ind.genes],
@@ -27,6 +27,7 @@ function evaluatePopulation(population: Individual[], enableSsim: boolean, enabl
             ssim: result.ssim,
             pixelDiff: result.pixelDiff,
             subPixel: result.subPixel,
+            polygon: result.polygon,
             diff: result.diff,
             probability: 0,
             id: ind.id,
@@ -39,7 +40,7 @@ function evaluatePopulation(population: Individual[], enableSsim: boolean, enabl
     return evaluatedPopulation;
 }
 
-function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean, enableSubDiff: boolean, ratioSsim: number, ratioPixelDiff: number, ratioSubDiff: number, nbVertices: number, nbColor: number, image: ImageData, ctx: Context): Result {
+function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean, enableSubDiff: boolean, enableVariablePolygons: boolean, ratioSsim: number, ratioPixelDiff: number, ratioSubDiff: number, ratioPolygons: number, nbVertices: number, nbColor: number, image: ImageData, ctx: Context): Result {
     
     ind.phenotype = buildPhenotypeFromGenes(ind.genes, nbVertices, nbColor);
     
@@ -109,23 +110,36 @@ function evaluate(ind: Individual, enableSsim: boolean, enablePixelDiff: boolean
         overloadRatioSubDiff = 0;
     }
     
+    let polygonFitness = 0;
+    let overloadRatioPolygons = ratioPolygons;
+    if (enableVariablePolygons) {
+        const polygonSize = (nbVertices * 2 + nbColor)
+        polygonFitness = 1 - ((ind.genes.length / polygonSize) / 500);
+    }
+    else {
+        overloadRatioPolygons = 0;
+    }
+
     const result: Result = {
-        fitness: (ssimResult.mssim * overloadRatioSsim + ratioMatchingPixel * overloadRatioPixelDiff + substractResult * overloadRatioSubDiff) / (overloadRatioSsim + overloadRatioPixelDiff + overloadRatioSubDiff),
+        fitness: (polygonFitness * overloadRatioPolygons) + (ssimResult.mssim * overloadRatioSsim + ratioMatchingPixel * overloadRatioPixelDiff + substractResult * overloadRatioSubDiff) / (overloadRatioSsim + overloadRatioPixelDiff + overloadRatioSubDiff + overloadRatioPolygons),
         ssim: ssimResult.mssim,
         pixelDiff: ratioMatchingPixel,
         subPixel: substractResult,
+        polygon: polygonFitness,
         diff: diff
     }
+
     return result;
 }
 
-function mutate(ind: Individual, mutationRate: number, vertexMovement: number, colorModificationRate: number, copyColorNeighborRate: number, nbVertices: number, nbColor: number, width: number, height: number, force: boolean): Individual {
+function mutate(ind: Individual, mutationRate: number, vertexMovement: number, colorModificationRate: number, copyColorNeighborRate: number, addPolygonRate: number, removePolygonRate: number, nbVertices: number, nbColor: number, variablePolygons: boolean, width: number, height: number, force: boolean): Individual {
     const mutant: Individual = {
         genes: [],
         fitness: 0,
         ssim: 0,
         pixelDiff: 0,
         subPixel: 0,
+        polygon: 0,
         diff: undefined,
         probability: 0,
         id: Date.now(),
@@ -134,7 +148,6 @@ function mutate(ind: Individual, mutationRate: number, vertexMovement: number, c
     
     const probaToMutate = force ? 1.0 : mutationRate;
     let i = 0;
-    let swapBuffer: number[] = [];
     const polygonSize = nbVertices * 2 + nbColor;
     while (i < ind.genes.length) {
         if (Math.random() < probaToMutate) {     
@@ -145,22 +158,35 @@ function mutate(ind: Individual, mutationRate: number, vertexMovement: number, c
             const isStartingVertex = (relativeIndex % 2) === 0 && isVertexCoordinates;
             const isColorInformation = relativeIndex >= (nbVertices * 2);
             const isStartingColorInformation = relativeIndex === (nbVertices * 2);
+            const isStartingPolygon = relativeIndex === 0;
+            const nbPolygons = mutant.genes.length % polygonSize;
 
             if (isStartingVertex) {
-                //Modify the vertex
-                let v: Vertex = {
-                    x: ind.genes[i],
-                    y: ind.genes[i + 1]
-                };
+                const rand = Math.random();
+                if (variablePolygons && isStartingPolygon && rand < addPolygonRate && nbPolygons < 500) {
+                    const newPolygon = createPolygon(nbVertices, nbColor, width, height);
+                    mutant.genes = mutant.genes.concat(newPolygon);
+                }
+                else if (variablePolygons && isStartingPolygon && rand < removePolygonRate) {
+                    // ignore one polygon
+                    i += polygonSize;
+                }
+                else {
+                    //Modify the vertex
+                    let v: Vertex = {
+                        x: ind.genes[i],
+                        y: ind.genes[i + 1]
+                    };
 
-                let maxDistance = Math.max(width, height) * vertexMovement;
-                let range = randomNumberInRange(-maxDistance, maxDistance, false);
-                if (range > -1 && range <= 0) { range = -1}
-                if (range < 1 && range >= 0) { range = 1}
-                v = moveVertex(v, range, width, height);
-                mutant.genes.push(v.x);
-                mutant.genes.push(v.y);
-                i += 2;
+                    let maxDistance = Math.max(width, height) * vertexMovement;
+                    let range = randomNumberInRange(-maxDistance, maxDistance, false);
+                    if (range > -1 && range <= 0) { range = -1}
+                    if (range < 1 && range >= 0) { range = 1}
+                    v = moveVertex(v, range, width, height);
+                    mutant.genes.push(v.x);
+                    mutant.genes.push(v.y);
+                    i += 2;
+                }
             }
             else if (isColorInformation) {
                 if (Math.random() < copyColorNeighborRate && isStartingColorInformation) {
@@ -198,7 +224,12 @@ function mutate(ind: Individual, mutationRate: number, vertexMovement: number, c
             i++;
         }      
     }    
-    mutant.genes = mutant.genes.concat(swapBuffer);
+
+    if (mutant.genes.length === 0) {
+        const newIndividual = createIndividual(ind.genes.length / polygonSize, nbVertices, nbColor, width, height);
+        mutant.genes = newIndividual.genes;
+    }
+    
     return mutant;
 }
 
@@ -310,9 +341,11 @@ self.addEventListener("message", e => {
                 config.enableSsim,
                 config.enablePixelDiff,
                 config.enableSubDiff,
+                config.enableVariablePolygons,
                 config.ratioSsim,
                 config.ratioPixelDiff,
                 config.ratioSubDiff,
+                config.ratioPolygons,
                 config.nbVertex,
                 nbColors,
                 scaledOriginalImage,
@@ -338,8 +371,11 @@ self.addEventListener("message", e => {
                         config.vertexMovement, 
                         config.colorModificationRate, 
                         config.copyColorNeighborRate,
+                        config.addPolygonRate,
+                        config.removePolygonRate,
                         config.nbVertex, 
                         nbColors, 
+                        config.enableVariablePolygons,
                         msg.renderingWidth, 
                         msg.renderingHeight, 
                         false);
@@ -349,9 +385,11 @@ self.addEventListener("message", e => {
                         config.enableSsim,
                         config.enablePixelDiff,
                         config.enableSubDiff,
+                        config.enableVariablePolygons,
                         config.ratioSsim,
                         config.ratioPixelDiff,
                         config.ratioSubDiff,
+                        config.ratioPolygons,
                         config.nbVertex,
                         nbColors,
                         scaledOriginalImage, 
@@ -361,20 +399,25 @@ self.addEventListener("message", e => {
                     mutant.ssim = result.ssim;
                     mutant.pixelDiff = result.pixelDiff;
                     mutant.subPixel = result.subPixel;
+                    mutant.polygon = result.polygon;
                     mutant.diff = result.diff;
                     nextPop.push(mutant);
                 }
                 else if (rand < (config.keepPreviousRatio + config.newIndividualRatio)) {
                     // Create a new individual
-                    const ind = createIndividual(config.nbPolygons, config.nbVertex, nbColors, msg.renderingWidth, msg.renderingHeight);
+                    const polygonSize = config.nbVertex * 2 + nbColors;
+                    const nbPolygons = previousBest.genes.length / polygonSize;
+                    const ind = createIndividual(nbPolygons, config.nbVertex, nbColors, msg.renderingWidth, msg.renderingHeight);
                     const result = evaluate(
                         ind, 
                         config.enableSsim,
                         config.enablePixelDiff,
                         config.enableSubDiff,
+                        config.enableVariablePolygons,
                         config.ratioSsim,
                         config.ratioPixelDiff,
                         config.ratioSubDiff,
+                        config.ratioPolygons,
                         config.nbVertex,
                         nbColors,
                         scaledOriginalImage, 
@@ -384,6 +427,7 @@ self.addEventListener("message", e => {
                     ind.ssim = result.ssim;
                     ind.pixelDiff = result.pixelDiff;
                     ind.subPixel = result.subPixel;
+                    ind.polygon = result.polygon;
                     ind.diff = result.diff;
                     nextPop.push(ind);
                 }
@@ -402,14 +446,21 @@ self.addEventListener("message", e => {
                     }
                     
                     let child = crossOver(parentA, parentB, config.crossoverStrategy, config.crossoverParentRatio, config.nbVertex, nbColors);
+                    if (child.genes.length === 0) {
+                        console.log("Child has 0 genes in " +  msg.generation + 1 + " generation");
+                    }
+
                     child = mutate(
                         child, 
                         config.mutationRate, 
                         config.vertexMovement, 
                         config.colorModificationRate, 
                         config.copyColorNeighborRate,
+                        config.addPolygonRate,
+                        config.removePolygonRate,
                         config.nbVertex, 
                         nbColors, 
+                        config.enableVariablePolygons,
                         msg.renderingWidth, 
                         msg.renderingHeight, 
                         false);
@@ -419,9 +470,11 @@ self.addEventListener("message", e => {
                         config.enableSsim,
                         config.enablePixelDiff,
                         config.enableSubDiff,
+                        config.enableVariablePolygons,
                         config.ratioSsim,
                         config.ratioPixelDiff,
                         config.ratioSubDiff,
+                        config.ratioPolygons,
                         config.nbVertex,
                         nbColors,
                         scaledOriginalImage, 
@@ -431,6 +484,7 @@ self.addEventListener("message", e => {
                     child.ssim = result.ssim;
                     child.pixelDiff = result.pixelDiff;
                     child.subPixel = result.subPixel;
+                    child.polygon = result.polygon;
                     child.diff = result.diff;
                     nextPop.push(child);
                 }
@@ -442,9 +496,9 @@ self.addEventListener("message", e => {
         let end = (new Date()).getTime();
         let elapsedTime = (end - start) / 1000; //in seconds
 
-        let best: Individual;
+        let best: Individual;        
         let nonImprovingSince = msg.notImprovingSince;
-        if (previousBest && previousBest.fitness > nextPop[0].fitness) {
+        if (previousBest && previousBest.fitness > nextPop[0].fitness) {            
             best = previousBest;
             nonImprovingSince++;
         }
@@ -452,7 +506,7 @@ self.addEventListener("message", e => {
             best = nextPop[0];
             nonImprovingSince = 0;
         }
-        
+
         const response: AGworkerOut = {
             isRunning: true,
             best: best,

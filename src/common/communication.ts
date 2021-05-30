@@ -4,10 +4,6 @@ export interface AGworkerIn {
     isRunning: boolean;
     image: ImageData;
     configuration: Configuration;
-    //populationSize: number;
-    //genesSize: number;
-    //nbVertices: number;
-    //nbColor: number;
     population: Individual[];
     generation: number;
     best: Individual;

@@ -14,14 +14,18 @@ export interface InputRangeProps {
     vertexMovement: number;
     colorModificationRate: number;
     copyColorNeighborRate: number;
+    addPolygonRate: number;
+    removePolygonRate: number;
     enableSsim: boolean;
     enablePixelDiff: boolean;
     enableSubDiff: boolean;
     ratioSsim: number;
     ratioPixelDiff: number;
     ratioSubDiff: number;
+    ratioPolygons: number;
     enableTransparency: boolean;
     nbVertex: number;
+    enableVariablePolygons: boolean;
     nbPolygons: number;
     resolution: number;
     className: string;
@@ -40,14 +44,18 @@ export function GAConfigurationInfo({
     vertexMovement,
     colorModificationRate,
     copyColorNeighborRate,
+    addPolygonRate,
+    removePolygonRate,
     enableSsim,
     enablePixelDiff,
     enableSubDiff,
     ratioSsim,
     ratioPixelDiff,
     ratioSubDiff,
+    ratioPolygons,
     enableTransparency,
     nbVertex,
+    enableVariablePolygons,
     nbPolygons,
     resolution,
     className}: InputRangeProps) {
@@ -73,9 +81,13 @@ export function GAConfigurationInfo({
         if (enableSubDiff) {
             enabledEngines.push("Sub diff (" + ratioSubDiff + ")");
         }
+
+        if (enableVariablePolygons) {
+            enabledEngines.push("Polygons (" + ratioPolygons + ")");
+        }
         
         const elements: JSX.Element[] = [];
-        elements.push(<Tr key="tr-3"><Td> Fitness functions:</Td><Td isNumeric>{enabledEngines.join(',')}</Td></Tr>);
+        elements.push(<Tr key="tr-3"><Td> Fitness functions:</Td><Td isNumeric>{enabledEngines.join(', ')}</Td></Tr>);
         return elements;
     }
 
@@ -114,6 +126,8 @@ export function GAConfigurationInfo({
                 <Tr><Td>Copy neighbor color rate :</Td><Td isNumeric>{copyColorNeighborRate * 100}%</Td></Tr>                
                 <Tr><Td>Vertex movement during mutation :</Td><Td isNumeric>{vertexMovement * 100}%</Td></Tr>
                 <Tr><Td>Color movement during mutation :</Td><Td isNumeric>{colorModificationRate * 100}%</Td></Tr>
+                <Tr><Td>Add polygon during mutation :</Td><Td isNumeric>{addPolygonRate * 100}%</Td></Tr>
+                <Tr><Td>Remove polygon during mutation :</Td><Td isNumeric>{removePolygonRate * 100}%</Td></Tr>
                 </Tbody>
             </Table>
 
@@ -125,6 +139,7 @@ export function GAConfigurationInfo({
                 <Tr><Td>Resolution :</Td><Td isNumeric>{resolution}px</Td></Tr>                  
                 {generateFitnessEngineInformation()}
                 <Tr><Td>Transparency enabled :</Td><Td isNumeric>{enableTransparency}</Td></Tr>
+                <Tr><Td>Variable number of polygons:</Td><Td isNumeric>{enableVariablePolygons}</Td></Tr>
                 <Tr><Td>Vertex by polygon :</Td><Td isNumeric>{nbVertex}</Td></Tr>
                 <Tr><Td>Generated polygons :</Td><Td isNumeric>{nbPolygons}</Td></Tr>         
                 </Tbody>   
