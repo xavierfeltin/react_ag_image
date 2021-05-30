@@ -35,11 +35,15 @@ All the parameters used in the genetic algorithm are available on the configurat
 - number of vertex for the polygons
 - ...
 
+Lastly, there is an option to have a variable number of polygons during the simulation. So, it is possible to start from 1 polygon and see how it will evolve.
+This option can be disable to work to a fixed size of polygons.
+
 ## Fitness function
 Here are the three different way to compute the similarity between two images used in this project :
 - [Ssim library](https://github.com/obartra/ssim): it computes a score based on the structural similarity of the images.
 - [Pixelmatch library](https://github.com/mapbox/pixelmatch): it computes a score based on the difference of color metrics between two images 
 - The direct approach of summing the differences between each pixel of the images. (inspired from [https://chriscummins.cc/s/genetics/](https://chriscummins.cc/s/genetics/))
+- The number of polygons used to draw the image (to force the algorithm to optimize what it already have before adding a new polygon) (only if the configuration has enabled a variable number of polygons)
 
 It is possible to enable one or several of them to compute a  global fitness. The final fitness is a ponderated sum of each approach.
 
