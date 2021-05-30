@@ -20,13 +20,13 @@ function MyApp() {
   const limitImageSize = 256;
   const sampleLnks: {name: string, link: string}[] = [
     { 
-      name: "Einstein",
-      link: "https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"
-    },
-    { 
       name: "Joconde",
       link: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/ec/Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg/390px-Mona_Lisa%2C_by_Leonardo_da_Vinci%2C_from_C2RMF_retouched.jpg"
     },
+    { 
+      name: "Einstein",
+      link: "https://raw.githubusercontent.com/obartra/ssim/master/spec/samples/einstein/Q1.gif"
+    },    
     { 
       name: "Photographer",
       link: "https://i.picsum.photos/id/823/420/560.jpg?hmac=H6lJE4fRi96MxgWYyd3_79WbmObu-jJj7Zo40p5I-nU"
