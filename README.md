@@ -5,7 +5,7 @@ This reflexion took me one more time on Genetic Algorithm and I wondered if it w
  
 As usual, I tried to make the project severless so I could take advantage of Github Pages to make the result easily available.
 
-The website is available at [https://xavierfeltin.github.io/react_ag_image/](https://xavierfeltin.github.io/react_ag_image/) (Chrome "only" due to OffscreenCanvas object to speed up the computaions in the web worker)
+The website is available at [https://xavierfeltin.github.io/react_ag_image/](https://xavierfeltin.github.io/react_ag_image/) (Chrome "only" due to OffscreenCanvas object to speed up the computations in the web worker)
 
 ## Global approach
 
